@@ -220,6 +220,7 @@ static void Exec(commandT* cmd, bool forceFork)
         else {
                 if (pid==0){
                 //child
+			setpgid(0, 0);
                         execv(cmd->name,cmd->argv);
                 }
                 else{
@@ -306,4 +307,8 @@ void ReleaseCmdT(commandT **cmd){
     if((*cmd)->argv[i] != NULL) free((*cmd)->argv[i]);
   free(*cmd);
 }
-                                                      
+                        
+void HandleChildren()
+{
+
+}                              
