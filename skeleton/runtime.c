@@ -92,7 +92,13 @@ int total_task;
 void RunCmd(commandT** cmd, int n)
 {
   int i;
+  int count;
   total_task = n;
+  printf("Command name: %s \n",cmd[0]->argv[0]);
+  printf("Command argument count: %d \n",cmd[0]->argc-1);
+  for ( count=1;count<cmd[0]->argc;count++){
+        printf("Argument %d : %s \n",count,cmd[0]->argv[count]);
+  }
   if(n == 1)
     RunCmdFork(cmd[0], TRUE);
   else{
@@ -105,6 +111,7 @@ void RunCmd(commandT** cmd, int n)
 void RunCmdFork(commandT* cmd, bool fork)
 {
   if (cmd->argc<=0)
+    //printf("You typed enter! \n");
     return;
   if (IsBuiltIn(cmd->argv[0]))
   {
@@ -185,7 +192,7 @@ static bool ResolveExternalCmd(commandT* cmd)
     if(stat(buf, &fs) >= 0){
       if(S_ISDIR(fs.st_mode) == 0)
         if(access(buf,X_OK) == 0){/*Whether it's an executable or the user has required permisson to run it*/
-          cmd->name = strdup(buf); 
+          cmd->name = strdup(buf);
           return TRUE;
         }
     }
@@ -195,16 +202,78 @@ static bool ResolveExternalCmd(commandT* cmd)
 
 static void Exec(commandT* cmd, bool forceFork)
 {
+        pid_t pid;
+        int status;
+        printf("%s \n",cmd->name);
+
+        //make copy of arguments without the command
+        int i=0;
+        char* argArray[cmd->argc-1];
+        for (i=0;i<cmd->argc-1;i++){
+                argArray[i] = strdup(cmd->argv[i+1]);
+        }
+
+
+        if ((pid==fork()) < 0){
+                err_sys("fork error");
+        }
+        else {
+                if (pid==0){
+                //child
+                        execv(cmd->name,cmd->argv);
+                }
+                else{
+                        //parent
+                        waitpid(pid,&status,0);
+                }
+        }
 }
+
 
 static bool IsBuiltIn(char* cmd)
 {
-  return FALSE;     
+  int i=0;
+  int numberOfCommands = 2;
+  printf("You are trying to run the command %s \n",cmd);
+  char* commands[2] = {"echo","exit"};
+  for (i=0;i<numberOfCommands;i++){
+        if (strcmp(cmd,commands[i])==0){
+                //printf("And it's built-in! \n");
+                return TRUE;
+        }
+  }
+  return FALSE;
 }
 
 
 static void RunBuiltInCmd(commandT* cmd)
 {
+        //running built-in command
+        int i=0;
+        //check if it's exit
+        if (strcmp(cmd->argv[0],"exit")==0){
+                return;
+        }
+
+
+        //check for echo
+        if (strcmp(cmd->argv[0],"echo")==0){
+                for (i=1;i<cmd->argc;i++){
+                        //check for environment var
+                        if (cmd->argv[i][0]=="$"){
+                                //get the 1st through n elements of this argument
+                                char* envVar = malloc(strlen((cmd->argv[i]))*sizeof(char));
+                                memcpy(envVar,cmd->argv[i]+sizeof(char),sizeof(char)*strlen(cmd->argv[i]));
+                                printf("%s ",getenv(envVar));
+                        }
+                        else{
+                                printf("%s ",cmd->argv[i]);
+                        }
+                }
+                printf("\n");
+        }
+
+
 }
 
 void CheckJobs()
@@ -237,3 +306,4 @@ void ReleaseCmdT(commandT **cmd){
     if((*cmd)->argv[i] != NULL) free((*cmd)->argv[i]);
   free(*cmd);
 }
+                                                      
