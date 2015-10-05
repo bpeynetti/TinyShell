@@ -110,7 +110,7 @@ static void sig_handler(int signo)
       StopProcessHandler();
       break;
     case SIGINT:
-      forceExit = true;
+      forceExit = TRUE;
       InterruptProcessHandler();
       break;
     case SIGCHLD:
