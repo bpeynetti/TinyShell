@@ -198,6 +198,7 @@ EXTERN void ChildHandler();
 EXTERN void InterruptProcessHandler();
 EXTERN void StopProcessHandler();
 EXTERN bgjobL* FindJob(pid_t id, bool Process);
+EXTERN void ReleaseJob(bgjobL* job);
 
 
 

@@ -247,6 +247,7 @@ static void Exec(commandT* cmd, bool forceFork)
                     }
                     //otherwise the job goes in the foreground
                     else {
+                        printf("Adding job %d \n",pid);
                         fgpid = pid;
                         AddJob(pid, FOREGROUND, cmd->cmdline);
                         WaitFg(pid);
@@ -421,21 +422,55 @@ void UpdateJobs(pid_t pid, int state)
   }
 }
 
+void ReleaseJob(bgjobL* job)
+{
+    free(job->cmdline);
+    free(job);
+}
 
-// void JobCheck{
-//     bgjobL* thisJob = bgJobs;
-//     bgjobL* prevJob = NULL;
+void CheckJobs(){
+    bgjobL* thisJob = bgjobs;
+    bgjobL* prevJob = NULL;
     
-//     //iterate through all jobs and kill if necessary
-//     while (thisJob != NULL){
-//         if (thisJob->state == DONE){
-            
-//         }
-//     }
-// }
-
-// Find Job from pid -> simply iterate over list until you find the job
-// if you don't find it, then just return NULL
+    //iterate over all jobs and kill if necessary
+    while (thisJob != NULL){
+        if (thisJob->state == DONE)
+        {
+            // if (current->print)
+            // {
+            //     printf("[%d] Done   %s \n", current->jid,current->cmdline);
+            // }
+            // else
+            // {
+            //     fgpid = fgpid-1;
+            // }
+            if (prevJob == NULL){
+                bgjobs = thisJob->next;
+                ReleaseJob(thisJob);
+                thisJob = bgjobs;
+            } 
+            else 
+            {
+                //skip over and join previous with next
+                prevJob->next = thisJob->next;
+                ReleaseJob(thisJob);
+                thisJob = prevJob->next;
+            }
+            fflush(stdout);
+        }
+        else{
+            //just continue
+            prevJob = thisJob; 
+            thisJob = thisJob->next;
+        }
+      
+    }
+    if (bgjobs==NULL)
+    {
+        //no more jobs, reset job id
+        nextJobId = 1;
+    }
+}
 
 void WaitFg(pid_t pid)
 {
