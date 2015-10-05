@@ -130,6 +130,7 @@ void RunCmdFork(commandT* cmd, bool fork)
 void RunCmdBg(commandT* cmd)
 {
   // TODO
+  //currently at another place ---> in runbuiltincmd!
 }
 
 void RunCmdPipe(commandT* cmd1, commandT* cmd2)
@@ -256,9 +257,6 @@ static void Exec(commandT* cmd, bool forceFork)
     //}
 }
 
-void signal_handling(){
-    printf("Child stopped! %d \n");
-}
 
 static bool IsBuiltIn(char* cmd)
 {
@@ -334,7 +332,7 @@ static void RunBuiltInCmd(commandT* cmd)
 
 				//and bring state to FOREGROUND
 				jobTofg->state = FOREGROUND;
-				printf("Job %d brought to foreground: %s ",jobTofg->jid,jobTofg->cmdline);
+				printf("Job %d brought to foreground: %s \n",jobTofg->jid,jobTofg->cmdline);
 				//now wait for it to finish
 				fgpid = jobTofg->pid;
 				WaitFg(jobTofg->pid);
@@ -344,6 +342,30 @@ static void RunBuiltInCmd(commandT* cmd)
 		}
 	}
 
+  if (strcmp(cmd->argv[0], "bg") == 0)
+  {
+    if (cmd->argv[1] == NULL)
+    {
+      //no job id given
+      printf("No job id \n");
+    }
+    else
+    {
+      //get the job id as an integer
+      pid_t jid = atoi(cmd->argv[1]);
+      //find the job in the list
+      bgjobL* jobToBg = FindJob(jid, FALSE);
+      if (jobToBg == NULL)
+      {
+        printf("Job does not exist \n");
+        return;
+      }
+      else
+      {
+        
+      }
+    }
+  }
 
 }
 
@@ -509,7 +531,8 @@ void CheckJobs(){
               printf("[%d] Done   %s \n", thisJob->jid,thisJob->cmdline);
             }
             else {
-              ///fgpid = fgpid - 1;
+            	//give control to the shell
+              fgpid = - 1;
             }
 
             if (prevJob == NULL){
@@ -561,9 +584,11 @@ void InterruptProcessHandler()
   //kills the foreground process if you're in the parent
   if (fgpid >= 0)
   {
+  	printf("This is killing a process %d \n",fgpid);
     //kills the process, throws a SIGINT
     kill(-fgpid, SIGINT);
   }
+  printf("Can't kill me just yet \n");
 }
 
 
@@ -573,8 +598,9 @@ void StopProcessHandler()
   //kills the foreground process if you're in the parent
   if (fgpid >= 0)
   {
-    //kills the process, throws a SIGTSTP
+    //stops the process, throws a SIGTSTP
     kill(-fgpid, SIGTSTP);
+    //returns control to shell
     fgpid = -1;
   }
 }
@@ -591,6 +617,7 @@ void ChildHandler()
     wpid = waitpid(-1, &status, WNOHANG | WUNTRACED);
     if (wpid == fgpid)
     {
+      //return control to terminal
       fgpid = -1;
     }
     //options are child process is stopped or done
