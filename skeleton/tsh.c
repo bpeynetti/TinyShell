@@ -72,6 +72,7 @@ int main (int argc, char *argv[])
   /* shell initialization */
   if (signal(SIGINT, sig_handler) == SIG_ERR) PrintPError("SIGINT");
   if (signal(SIGTSTP, sig_handler) == SIG_ERR) PrintPError("SIGTSTP");
+  if (signal(SIGCHLD, sig_handler) == SIG_ERR) PrintPError("SIGCHLD");
 
   while (!forceExit) /* repeat forever */
   {
@@ -109,9 +110,11 @@ static void sig_handler(int signo)
       StopProcessHandler();
       break;
     case SIGINT:
+      forceExit = true;
       InterruptProcessHandler();
       break;
     case SIGCHLD:
+      printf("SIGCHLD\n");
       ChildHandler();
       break;
     default:
