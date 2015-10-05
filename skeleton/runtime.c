@@ -263,9 +263,9 @@ void signal_handling(){
 static bool IsBuiltIn(char* cmd)
 {
   int i=0;
-  int numberOfCommands = 2;
+  int numberOfCommands = 3;
   printf("You are trying to run the command %s \n",cmd);
-  char* commands[2] = {"echo","exit"};
+  char* commands[3] = {"echo","exit", "jobs"};
   for (i=0;i<numberOfCommands;i++){
         if (strcmp(cmd,commands[i])==0){
                 //printf("And it's built-in! \n");
@@ -303,7 +303,35 @@ static void RunBuiltInCmd(commandT* cmd)
                 printf("\n");
         }
 
+	if (strcmp(cmd->argv[0], "jobs")==0){
+		PrintJobs();
+	}
 
+
+}
+
+void PrintJobs()
+{
+	bgjobL* current = bgjobs;
+	const char* state;
+	while (current != NULL)
+	{
+		if (current->state == BACKGROUND)
+		{
+			state = "Running";
+			printf("[%d]   %s                 %s &\n", current->jid, state, current->cmdline);
+			fflush(stdout);
+		}
+		else if (current->state == STOPPED)
+		{
+			state = "Stopped";
+			printf("[%d]   %s                 %s\n", current->jid, state, current->cmdline);
+			fflush(stdout);
+		}
+
+		current = current->next;
+		
+	}
 }
 
 
