@@ -64,13 +64,17 @@
 
 #define NBUILTINCOMMANDS (sizeof BuiltInCommands / sizeof(char*))
 
-typedef struct bgjob_l {
-  pid_t pid;
-  struct bgjob_l* next;
-} bgjobL;
+
 
 /* the pids of the background processes */
 bgjobL *bgjobs = NULL;
+bgjobL *lastJob = NULL;
+// bgjobL *lastJob = NULL; //ptr to end of the job list
+
+// the next job id 
+int nextJobId = 1;
+// foreground process
+int fgpid = 0;
 
 /************Function Prototypes******************************************/
 /* run command */
@@ -205,28 +209,49 @@ static void Exec(commandT* cmd, bool forceFork)
         pid_t pid;
         int status;
         printf("%s \n",cmd->name);
+        
+        sigset_t mask;
+        sigemptyset(&mask);
+        sigaddset(&mask,SIGCHLD);
+        sigaddset(&mask,SIGINT);
+        sigaddset(&mask,SIGTSTP);
+        //blocks the signals specified above
+        sigprocmask(SIG_BLOCK, &mask, NULL);
 
         //make copy of arguments without the command
-        int i=0;
-        char* argArray[cmd->argc-1];
-        for (i=0;i<cmd->argc-1;i++){
-                argArray[i] = strdup(cmd->argv[i+1]);
-        }
+        //int i=0;
+        //char* argArray[cmd->argc-1];
+        //for (i=0;i<cmd->argc-1;i++){
+        //        argArray[i] = strdup(cmd->argv[i+1]);
+        //}
 
-
+        //check for fork error
         if ((pid==fork()) < 0){
                 err_sys("fork error");
         }
+        //successful fork
         else {
                 if (pid==0){
                 //child
-			setpgid(0, 0);
-                        execv(cmd->name,cmd->argv);
-                }
-                else{
-                        //parent
-                        waitpid(pid,&status,0);
-                }
+			            setpgid(0, 0);
+			            //unblocks the signals specified above
+			            sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                  execv(cmd->name,cmd->argv);
+                  }
+                  else{
+                    //parent
+                    sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                    //we add the job to the background if it was specified as background
+                    if (cmd->bg ==1){
+                        AddJob(pid,BACKGROUND, cmd->cmdline); //add job to background jobs
+                    }
+                    //otherwise the job goes in the foreground
+                    else {
+                        fgpid = pid;
+                        AddJob(pid, FOREGROUND, cmd->cmdline);
+                        WaitFg(pid);
+                    }
+                  }
         }
 }
 
@@ -277,9 +302,6 @@ static void RunBuiltInCmd(commandT* cmd)
 
 }
 
-void CheckJobs()
-{
-}
 
 
 commandT* CreateCmdT(int n)
@@ -307,8 +329,178 @@ void ReleaseCmdT(commandT **cmd){
     if((*cmd)->argv[i] != NULL) free((*cmd)->argv[i]);
   free(*cmd);
 }
-                        
-void HandleChildren()
-{
 
+
+// job stuff
+void AddJob(pid_t pid, int state, char* cmdline){
+    //modify this so that there is a pointer to the end of the job list
+    
+    bgjobL* current = bgjobs;
+    bgjobL* nextJob = (bgjobL*) malloc(sizeof(bgjobL));
+    //now assign the same pid, state, and all that
+    //and job id is whatever's next
+    nextJob->state = state;
+    nextJob->pid = pid;
+    nextJob->jid = nextJobId;
+    nextJob->cmdline = cmdline;
+    nextJob->next = NULL;
+    
+    
+    //now look at what to do 
+    if (state == BACKGROUND)
+    {
+        nextJobId++;
+    }
+    else{
+        nextJob->jid = 0;
+    }
+    
+    //add the job to end of list of jobs
+    if (current == NULL)
+    {
+        bgjobs = nextJob;
+        lastJob = nextJob;
+    }
+    else
+    {
+        //add it to the end of the list of jobs
+        while (current->next != NULL){
+            current = current->next;
+        }
+        current->next = nextJob;
+    }
+    lastJob = nextJob;
+}
+
+bgjobL* FindJob(pid_t id, bool Process){
+    bgjobL* current = bgjobs;
+    pid_t check;
+    //iterate over all jobs until you find it
+    //Process  = true for pid, false for job id
+    //if you cant find it, return null
+    while (current!=NULL)
+    {
+        //capture the check we need
+        if (Process==TRUE){
+            check = current->pid;
+        }
+        else{
+            check = current->jid;
+        }
+        //now check it, otherwise iterate to next job
+        if (check == id)
+        {
+            return current;
+        }
+        else
+        {
+            current = current->next;   
+        }
+    }
+    return NULL;
+}
+
+void UpdateJobs(pid_t pid, int state)
+{
+  bgjobL* job;
+  job = FindJob(pid, TRUE);
+  
+  if (job != NULL)
+  {
+    job->state = state;
+    if (state == STOPPED)
+    {
+      if (job->jid == 0)
+      {
+        job->jid = nextJobId;
+        nextJobId += 1;
+      }
+      //NEED TO PRINT OUT THAT THE JOB WAS STOPPED
+      fflush(stdout);
+    }
+  }
+}
+
+
+// void JobCheck{
+//     bgjobL* thisJob = bgJobs;
+//     bgjobL* prevJob = NULL;
+    
+//     //iterate through all jobs and kill if necessary
+//     while (thisJob != NULL){
+//         if (thisJob->state == DONE){
+            
+//         }
+//     }
+// }
+
+// Find Job from pid -> simply iterate over list until you find the job
+// if you don't find it, then just return NULL
+
+void WaitFg(pid_t pid)
+{
+    bgjobL* job = FindJob(pid,TRUE);
+    //while job still in the foreground
+    while (job->state==FOREGROUND)
+    {
+        //not killed at some point 
+        while (job != NULL){
+            //wait 1 second for job to finish
+            sleep(1);
+        }
+    }
+}
+//---------------------------------------------------------------------------------------
+
+//SIGNAL HANDLERS
+
+//handle SIGINT signal (control c) 
+void InterruptProcessHandler()
+{
+  //kills the foreground process if you're in the parent
+  if (fgpid >= 0)
+  {
+    //kills the process, throws a SIGINT
+    kill(-fgpid, SIGINT);
+  }
+}
+
+
+//handle SIGTSTP signal (process stopped)
+void StopProcessHandler()
+{
+  //kills the foreground process if you're in the parent
+  if (fgpid >= 0)
+  {
+    //kills the process, throws a SIGTSTP
+    kill(-fgpid, SIGTSTP);
+    fgpid = -1;
+  }
+}
+
+void ChildHandler()
+{
+  int wpid;
+  int status;
+  do
+  {
+    //waitpid waits for the child process to execute
+    //WNOHANG - returns immediately if no child has exited
+    //WUNTRACED - return if a child has stopped
+    wpid = waitpid(-1, &status, WNOHANG | WUNTRACED);
+    if (wpid == fgpid)
+    {
+      fgpid = -1;
+    }
+    //options are child process is stopped or done
+    //can check which it is using WIFSTOPPED macro
+    if (WIFSTOPPED(status))//evaluates if child process is stopped
+    {
+      UpdateJobs(wpid, STOPPED);
+    }
+    else
+    {
+      UpdateJobs(wpid, DONE);
+    }
+  }while(wpid>0);
 }                              

@@ -64,7 +64,21 @@ typedef struct command_t
   char* argv[];
 } commandT;
 
+typedef struct bgjob_l {
+  pid_t pid;
+  pid_t jid;
+  int state;
+  char *cmdline;
+//  bool printJob;
+  struct bgjob_l* next;
+} bgjobL;
+
 /************Global Variables*********************************************/
+#define FOREGROUND 0
+#define BACKGROUND 1
+#define STOPPED 2
+#define DONE 3
+int fgpid;
 
 /***********************************************************************
  *  Title: Force a program exit 
@@ -177,5 +191,14 @@ EXTERN void CheckJobs();
 /************External Declaration*****************************************/
 
 /**************Definition***************************************************/
+
+EXTERN void WaitFg(pid_t pid);
+
+EXTERN void ChildHandler();
+EXTERN void InterruptProcessHandler();
+EXTERN void StopProcessHandler();
+EXTERN bgjobL* FindJob(pid_t id, bool Process);
+
+
 
 #endif /* __RUNTIME_H__ */

@@ -85,12 +85,13 @@ int main (int argc, char *argv[])
     }
 
     /* checks the status of background jobs */
-    CheckJobs();
+    //implement this to get rid of jobs that finished
+   // CheckJobs();
 
     /* interpret command and line
      * includes executing of commands */
     Interpret(cmdLine);
-    
+    printf("Not getting here!");
 
   }
 
@@ -101,5 +102,21 @@ int main (int argc, char *argv[])
 
 static void sig_handler(int signo)
 {
+  switch(signo)
+  {
+    
+    case SIGTSTP:
+      StopProcessHandler();
+      break;
+    case SIGINT:
+      InterruptProcessHandler();
+      break;
+    case SIGCHLD:
+      ChildHandler();
+      break;
+    default:
+      break;
+    
+  }
 }
 
