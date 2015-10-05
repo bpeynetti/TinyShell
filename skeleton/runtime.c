@@ -226,33 +226,33 @@ static void Exec(commandT* cmd, bool forceFork)
         //}
         pid = fork();
         //check for fork error
-        // if ((pid==fork()) < 0){
-        //         err_sys("fork error");
-        // }
+        if (pid < 0){
+                err_sys("fork error");
+        }
         // //successful fork
         // else {
-                if (pid==0){
-                //child
-			            setpgid(0, 0);
-			            //unblocks the signals specified above
-			            sigprocmask(SIG_UNBLOCK, &mask, NULL);
-                        execv(cmd->name,cmd->argv);
-                  }
-                  else{
-                    //parent
-                    sigprocmask(SIG_UNBLOCK, &mask, NULL);
-                    //we add the job to the background if it was specified as background
-                    if (cmd->bg ==1){
-                        AddJob(pid,BACKGROUND, cmd->cmdline); //add job to background jobs
-                    }
-                    //otherwise the job goes in the foreground
-                    else {
-                        printf("Adding job %d \n",pid);
-                        fgpid = pid;
-                        AddJob(pid, FOREGROUND, cmd->cmdline);
-                        WaitFg(pid);
-                    }
-                  }
+        if (pid==0){
+        //child
+	            setpgid(0, 0);
+	            //unblocks the signals specified above
+	            sigprocmask(SIG_UNBLOCK, &mask, NULL);
+                execv(cmd->name,cmd->argv);
+          }
+          else{
+            //parent
+            sigprocmask(SIG_UNBLOCK, &mask, NULL);
+            //we add the job to the background if it was specified as background
+            if (cmd->bg ==1){
+                AddJob(pid,BACKGROUND, cmd->cmdline); //add job to background jobs
+            }
+            //otherwise the job goes in the foreground
+            else {
+                printf("Adding job %d \n",pid);
+                fgpid = pid;
+                AddJob(pid, FOREGROUND, cmd->cmdline);
+                WaitFg(pid);
+            }
+          }
     //}
 }
 
@@ -305,6 +305,38 @@ static void RunBuiltInCmd(commandT* cmd)
 
 	if (strcmp(cmd->argv[0], "jobs")==0){
 		PrintJobs();
+	}
+	
+	if (strcmp(cmd->argv[0], "fg")==0){
+	    //bring process to foreground
+	    //the jid should have been given in the command so in argv[1]
+		
+		if (cmd->argv[1]==NULL){
+			//no job id given
+			printf("No job id \n");
+		}
+		else {
+			//get the job id as an integer
+			pid_t jid = atoi(cmd->argv[1]);
+			//find job
+			bgjobL* jobTofg = FindJob(jid,FALSE);
+			//now change state to foreground
+			if (jobTofg==NULL){
+				//job does not exist
+				return;
+			}
+			else {
+				// continue if it wasn't
+				kill(-(jobTofg->pid),SIGCONT);
+				//and bring state to FOREGROUND
+				jobTofg->state = FOREGROUND;
+				printf("Job %d brought to foreground ",)
+				//now wait for it to finish
+				WaitFg(jobTofg->pid);
+				
+			}
+			
+		}
 	}
 
 
@@ -375,6 +407,7 @@ void AddJob(pid_t pid, int state, char* cmdline){
     nextJob->pid = pid;
     nextJob->jid = nextJobId;
     nextJob->cmdline = cmdline;
+    nextJob->printedJob = FALSE;
     nextJob->next = NULL;
     
     
@@ -467,14 +500,13 @@ void CheckJobs(){
     while (thisJob != NULL){
         if (thisJob->state == DONE)
         {
-            // if (current->print)
-            // {
-            //     printf("[%d] Done   %s \n", current->jid,current->cmdline);
-            // }
-            // else
-            // {
-            //     fgpid = fgpid-1;
-            // }
+            if (thisJob->printedJob == FALSE){
+              printf("[%d] Done   %s \n", thisJob->id,thisJob->cmdline)
+            }
+            else {
+              ///fgpid = fgpid - 1;
+            }
+
             if (prevJob == NULL){
                 bgjobs = thisJob->next;
                 ReleaseJob(thisJob);

@@ -69,7 +69,7 @@ typedef struct bgjob_l {
   pid_t jid;
   int state;
   char *cmdline;
-//  bool printJob;
+  bool printedJob;
   struct bgjob_l* next;
 } bgjobL;
 

@@ -92,7 +92,7 @@ int main (int argc, char *argv[])
     /* interpret command and line
      * includes executing of commands */
     Interpret(cmdLine);
-    printf("Not getting here!");
+    printf("Not getting here! \n");
 
   }
 
