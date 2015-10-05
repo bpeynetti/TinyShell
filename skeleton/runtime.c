@@ -227,7 +227,7 @@ static void Exec(commandT* cmd, bool forceFork)
         pid = fork();
         //check for fork error
         if (pid < 0){
-                err_sys("fork error");
+                printf("Fork Error\n");//err_sys("fork error");
         }
         // //successful fork
         // else {
@@ -263,9 +263,9 @@ void signal_handling(){
 static bool IsBuiltIn(char* cmd)
 {
   int i=0;
-  int numberOfCommands = 3;
+  int numberOfCommands = 5;
   printf("You are trying to run the command %s \n",cmd);
-  char* commands[3] = {"echo","exit", "jobs"};
+  char* commands[5] = {"echo","exit", "jobs","fg", "bg"};
   for (i=0;i<numberOfCommands;i++){
         if (strcmp(cmd,commands[i])==0){
                 //printf("And it's built-in! \n");
@@ -322,16 +322,21 @@ static void RunBuiltInCmd(commandT* cmd)
 			bgjobL* jobTofg = FindJob(jid,FALSE);
 			//now change state to foreground
 			if (jobTofg==NULL){
+				printf("Job does not exist \n");
 				//job does not exist
 				return;
 			}
 			else {
-				// continue if it wasn't
-				kill(-(jobTofg->pid),SIGCONT);
+				if (jobTofg->state==STOPPED || jobTofg->state==BACKGROUND){
+					//continue if it wasn't already there
+					kill(-(jobTofg->pid),SIGCONT);
+				}
+
 				//and bring state to FOREGROUND
 				jobTofg->state = FOREGROUND;
-				printf("Job %d brought to foreground ",)
+				printf("Job %d brought to foreground: %s ",jobTofg->jid,jobTofg->cmdline);
 				//now wait for it to finish
+				fgpid = jobTofg->pid;
 				WaitFg(jobTofg->pid);
 				
 			}
@@ -501,7 +506,7 @@ void CheckJobs(){
         if (thisJob->state == DONE)
         {
             if (thisJob->printedJob == FALSE){
-              printf("[%d] Done   %s \n", thisJob->id,thisJob->cmdline)
+              printf("[%d] Done   %s \n", thisJob->jid,thisJob->cmdline);
             }
             else {
               ///fgpid = fgpid - 1;
