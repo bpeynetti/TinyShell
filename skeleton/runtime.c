@@ -224,19 +224,19 @@ static void Exec(commandT* cmd, bool forceFork)
         //for (i=0;i<cmd->argc-1;i++){
         //        argArray[i] = strdup(cmd->argv[i+1]);
         //}
-
+        pid = fork();
         //check for fork error
-        if ((pid==fork()) < 0){
-                err_sys("fork error");
-        }
-        //successful fork
-        else {
+        // if ((pid==fork()) < 0){
+        //         err_sys("fork error");
+        // }
+        // //successful fork
+        // else {
                 if (pid==0){
                 //child
 			            setpgid(0, 0);
 			            //unblocks the signals specified above
 			            sigprocmask(SIG_UNBLOCK, &mask, NULL);
-                  execv(cmd->name,cmd->argv);
+                        execv(cmd->name,cmd->argv);
                   }
                   else{
                     //parent
@@ -253,9 +253,12 @@ static void Exec(commandT* cmd, bool forceFork)
                         WaitFg(pid);
                     }
                   }
-        }
+    //}
 }
 
+void signal_handling(){
+    printf("Child stopped! %d \n");
+}
 
 static bool IsBuiltIn(char* cmd)
 {
