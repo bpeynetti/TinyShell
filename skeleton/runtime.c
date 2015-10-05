@@ -479,13 +479,11 @@ void WaitFg(pid_t pid)
 {
     bgjobL* job = FindJob(pid,TRUE);
     //while job still in the foreground
-    while (job->state==FOREGROUND)
+    while (job->state==FOREGROUND && job!=NULL)
     {
         //not killed at some point 
-        while (job != NULL){
             //wait 1 second for job to finish
             sleep(1);
-        }
     }
 }
 //---------------------------------------------------------------------------------------
