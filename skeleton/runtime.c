@@ -139,10 +139,12 @@ void RunCmdPipe(commandT* cmd1, commandT* cmd2)
 
 void RunCmdRedirOut(commandT* cmd, char* file)
 {
+	//redirection implemented in Exec
 }
 
 void RunCmdRedirIn(commandT* cmd, char* file)
 {
+	//redirection implemented in Exec
 }
 
 
@@ -240,6 +242,7 @@ static void Exec(commandT* cmd, bool forceFork)
 	            
 	            //check for redirections
 	            
+	//copy this to redirect in call
 	            //check redirection in
 	            if (cmd->is_redirect_in==1){
 			int fdin;
@@ -255,6 +258,7 @@ static void Exec(commandT* cmd, bool forceFork)
 	            	dup2(fdin,STDIN_FILENO);
 	            	close(fdin);
 		    }
+	//copy this to redirect out call
 	            //check redirection out
 	            if (cmd->is_redirect_out==1){
 			//create or open the file to use
@@ -281,7 +285,7 @@ static void Exec(commandT* cmd, bool forceFork)
             }
             //otherwise the job goes in the foreground
             else {
-                printf("Adding job %d \n",pid);
+                //printf("Adding job %d \n",pid);
                 fgpid = pid;
                 AddJob(pid, FOREGROUND, cmd->cmdline);
                 WaitFg(pid);
@@ -295,7 +299,7 @@ static bool IsBuiltIn(char* cmd)
 {
   int i=0;
   int numberOfCommands = 4;
-  printf("You are trying to run the command %s \n",cmd);
+ // printf("You are trying to run the command %s \n",cmd);
   char* commands[4] = {"exit", "jobs","fg", "bg"};
   for (i=0;i<numberOfCommands;i++){
         if (strcmp(cmd,commands[i])==0){
@@ -366,7 +370,7 @@ static void RunBuiltInCmd(commandT* cmd)
 
 				//and bring state to FOREGROUND
 				jobTofg->state = FOREGROUND;
-				printf("Job %d brought to foreground: %s \n",jobTofg->jid,jobTofg->cmdline);
+//				printf("Job %d brought to foreground: %s \n",jobTofg->jid,jobTofg->cmdline);
 				//now wait for it to finish
 				fgpid = jobTofg->pid;
 				WaitFg(jobTofg->pid);
@@ -538,6 +542,10 @@ void UpdateJobs(pid_t pid, int state)
   if (job != NULL)
   {
     job->state = state;
+    if (state == DONE)
+    {
+	job->printedJob = TRUE;
+    }
     if (state == STOPPED)
     {
       if (job->jid == 0)
@@ -622,11 +630,11 @@ void InterruptProcessHandler()
   //kills the foreground process if you're in the parent
   if (fgpid > 0)
   {
-  	printf("This is killing a process %d \n",fgpid);
+  //	printf("This is killing a process %d \n",fgpid);
         //kills the process, throws a SIGINT
-        //kill(-fgpid, SIGINT);
+        kill(-fgpid, SIGINT);
   }
-  printf("Can't kill me just yet \n");
+ // printf("Can't kill me just yet \n");
 }
 
 

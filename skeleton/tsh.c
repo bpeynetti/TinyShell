@@ -78,7 +78,7 @@ int main (int argc, char *argv[])
   {
     /* read command line */
     getCommandLine(&cmdLine, BUFSIZE);
-
+   // printf("\n");
     if(strcmp(cmdLine, "exit") == 0)
     {
       forceExit=TRUE;
@@ -92,7 +92,7 @@ int main (int argc, char *argv[])
     /* interpret command and line
      * includes executing of commands */
     Interpret(cmdLine);
-    printf("Not getting here! \n");
+//    printf("Not getting here! \n");
 
   }
 
@@ -110,11 +110,11 @@ static void sig_handler(int signo)
       StopProcessHandler();
       break;
     case SIGINT:
-      forceExit = TRUE;
+  //    forceExit = TRUE;
       InterruptProcessHandler();
       break;
     case SIGCHLD:
-      printf("SIGCHLD\n");
+     // printf("SIGCHLD\n");
       ChildHandler();
       break;
     default:
