@@ -237,6 +237,20 @@ static void Exec(commandT* cmd, bool forceFork)
 	            setpgid(0, 0);
 	            //unblocks the signals specified above
 	            sigprocmask(SIG_UNBLOCK, &mask, NULL);
+	            
+	            //check for redirections
+	            
+	            //check redirection in
+	            if (cmd->is_redirect_in==1){
+	            	//yes, so redirect with dup2
+	            	dup2(cmd->redirect_in,STDIN_FILENO);
+	            }
+	            //check redirection out
+	            if (cmd->is_redirect_out==1){
+	            	//yes, so redirect with dup2
+	            	dup2(cmd->redirect_out,STDOUT_FILENO);
+	            }
+	            
                 execv(cmd->name,cmd->argv);
           }
           else{
