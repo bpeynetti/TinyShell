@@ -592,7 +592,7 @@ void CheckJobs(){
         if (thisJob->state == DONE)
         {
             if (thisJob->printedJob == FALSE){
-              printf("[%d] Done   %s \n", thisJob->jid,thisJob->cmdline);
+              printf("[%d]   Done                 %s \n", thisJob->jid,thisJob->cmdline);
             }
             else {
             	//give control to the shell
