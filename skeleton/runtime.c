@@ -362,6 +362,10 @@ static void RunBuiltInCmd(commandT* cmd)
       }
       else
       {
+	if (jobToBg->state == STOPPED || jobToBg->state == BACKGROUND)
+	{
+		kill(-(jobToBg->pid), SIGCONT);
+	}
       	jobToBg->state = BACKGROUND; 
       }
     }
