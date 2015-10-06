@@ -362,7 +362,7 @@ static void RunBuiltInCmd(commandT* cmd)
       }
       else
       {
-        
+      	jobToBg->state = BACKGROUND; 
       }
     }
   }
