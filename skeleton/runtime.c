@@ -294,9 +294,9 @@ static void Exec(commandT* cmd, bool forceFork)
 static bool IsBuiltIn(char* cmd)
 {
   int i=0;
-  int numberOfCommands = 5;
+  int numberOfCommands = 4;
   printf("You are trying to run the command %s \n",cmd);
-  char* commands[5] = {"echo","exit", "jobs","fg", "bg"};
+  char* commands[4] = {"exit", "jobs","fg", "bg"};
   for (i=0;i<numberOfCommands;i++){
         if (strcmp(cmd,commands[i])==0){
                 //printf("And it's built-in! \n");
@@ -318,6 +318,7 @@ static void RunBuiltInCmd(commandT* cmd)
 
 
         //check for echo
+	/*
         if (strcmp(cmd->argv[0],"echo")==0){
                 for (i=1;i<cmd->argc;i++){
                         //check for environment var
@@ -333,7 +334,7 @@ static void RunBuiltInCmd(commandT* cmd)
                 }
                 printf("\n");
         }
-
+	*/
 	if (strcmp(cmd->argv[0], "jobs")==0){
 		PrintJobs();
 	}
@@ -619,11 +620,11 @@ void WaitFg(pid_t pid)
 void InterruptProcessHandler()
 {
   //kills the foreground process if you're in the parent
-  if (fgpid >= 0)
+  if (fgpid > 0)
   {
   	printf("This is killing a process %d \n",fgpid);
-    //kills the process, throws a SIGINT
-    kill(-fgpid, SIGINT);
+        //kills the process, throws a SIGINT
+        //kill(-fgpid, SIGINT);
   }
   printf("Can't kill me just yet \n");
 }
