@@ -559,11 +559,11 @@ void UpdateJobs(pid_t pid, int state)
   
   if (job != NULL)
   {
-    job->state = state;
-    if (state == DONE)
+    if (state == DONE && job->state != BACKGROUND)
     {
 	job->printedJob = TRUE;
     }
+    job->state = state;
     if (state == STOPPED)
     {
       if (job->jid == 0)
@@ -593,7 +593,8 @@ void CheckJobs(){
         {
             if (thisJob->printedJob == FALSE){
               printf("[%d]   Done                 %s \n", thisJob->jid,thisJob->cmdline);
-            }
+              thisJob->printedJob = TRUE;
+	    }
             else {
             	//give control to the shell
               fgpid = - 1;
