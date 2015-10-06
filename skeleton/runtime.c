@@ -420,7 +420,7 @@ static void RunBuiltInCmd(commandT* cmd)
   	}
   	else
   	{
-  		if (chdir(cmd->argv[1]]) != 0)
+  		if (chdir(cmd->argv[1]) != 0)
   		{
   			printf("error in cd\n");
   		}
