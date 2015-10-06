@@ -98,10 +98,10 @@ void RunCmd(commandT** cmd, int n)
   int i;
   int count;
   total_task = n;
-  printf("Command name: %s \n",cmd[0]->argv[0]);
-  printf("Command argument count: %d \n",cmd[0]->argc-1);
+  //printf("Command name: %s \n",cmd[0]->argv[0]);
+  //printf("Command argument count: %d \n",cmd[0]->argc-1);
   for ( count=1;count<cmd[0]->argc;count++){
-        printf("Argument %d : %s \n",count,cmd[0]->argv[count]);
+        //printf("Argument %d : %s \n",count,cmd[0]->argv[count]);
   }
   if(n == 1)
     RunCmdFork(cmd[0], TRUE);
@@ -211,7 +211,7 @@ static void Exec(commandT* cmd, bool forceFork)
 {
         pid_t pid;
         int status;
-        printf("%s \n",cmd->name);
+        //printf("%s \n",cmd->name);
         
         sigset_t mask;
         sigemptyset(&mask);
@@ -298,9 +298,9 @@ static void Exec(commandT* cmd, bool forceFork)
 static bool IsBuiltIn(char* cmd)
 {
   int i=0;
-  int numberOfCommands = 4;
+  int numberOfCommands = 5;
  // printf("You are trying to run the command %s \n",cmd);
-  char* commands[4] = {"exit", "jobs","fg", "bg"};
+  char* commands[5] = {"exit", "jobs","fg", "bg", "cd"};
   for (i=0;i<numberOfCommands;i++){
         if (strcmp(cmd,commands[i])==0){
                 //printf("And it's built-in! \n");
@@ -407,6 +407,11 @@ static void RunBuiltInCmd(commandT* cmd)
       	jobToBg->state = BACKGROUND; 
       }
     }
+  }
+  
+  if (strcmp(cmd->argv[0], "cd") == 0)
+  {
+  	
   }
 
 }
