@@ -411,7 +411,20 @@ static void RunBuiltInCmd(commandT* cmd)
   
   if (strcmp(cmd->argv[0], "cd") == 0)
   {
-  	
+  	if (cmd->argv[1] == NULL)
+  	{
+  		if (chdir(getenv("HOME")) != 0)
+  		{
+  			printf("error in cd\n");
+  		}
+  	}
+  	else
+  	{
+  		if (chdir(argv[1]]) != 0)
+  		{
+  			printf("error in cd\n");
+  		}
+  	}
   }
 
 }
