@@ -557,6 +557,9 @@ void UpdateJobs(pid_t pid, int state)
   bgjobL* job;
   job = FindJob(pid, TRUE);
   
+ // printf("%d\n", job->state);
+  //printf("%s\n", job->cmdline);
+  
   if (job != NULL)
   {
     if (state == DONE && job->state != BACKGROUND)
@@ -574,6 +577,7 @@ void UpdateJobs(pid_t pid, int state)
       //NEED TO PRINT OUT THAT THE JOB WAS STOPPED
       fflush(stdout);
     }
+   // printf("%d\n", state);
   }
 }
 
@@ -680,6 +684,8 @@ void ChildHandler()
     //WNOHANG - returns immediately if no child has exited
     //WUNTRACED - return if a child has stopped
     wpid = waitpid(-1, &status, WNOHANG | WUNTRACED);
+    printf("wpid: %d\n", wpid);
+    printf("fgpid: %d\n", fgpid);
     if (wpid == fgpid)
     {
       //return control to terminal
@@ -690,6 +696,7 @@ void ChildHandler()
     if (WIFSTOPPED(status))//evaluates if child process is stopped
     {
       UpdateJobs(wpid, STOPPED);
+      printf("WE HAVE STOPPED\n");
     }
     else
     {
