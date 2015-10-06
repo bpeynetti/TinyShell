@@ -242,13 +242,32 @@ static void Exec(commandT* cmd, bool forceFork)
 	            
 	            //check redirection in
 	            if (cmd->is_redirect_in==1){
+			int fdin;
+			fdin = open(cmd->redirect_in,O_RDONLY,S_IRUSR|S_IWUSR);
+			if (fdin<0){
+				//error
+				perror("Cannot open redirect in file");
+				exit(0);
+			}
+			
+			//printf("Redirect in %s\n",cmd->redirect_in);
 	            	//yes, so redirect with dup2
-	            	dup2(cmd->redirect_in,STDIN_FILENO);
-	            }
+	            	dup2(fdin,STDIN_FILENO);
+	            	close(fdin);
+		    }
 	            //check redirection out
 	            if (cmd->is_redirect_out==1){
+			//create or open the file to use
+			int fdout;
+			fdout = creat(cmd->redirect_out,S_IRUSR|S_IWUSR);
+			if (fdout<0){
+				perror("cannot open redirect out file");
+				exit(0);
+			}
+			//printf("Redirect out %s\n",cmd->redirect_out);
 	            	//yes, so redirect with dup2
-	            	dup2(cmd->redirect_out,STDOUT_FILENO);
+	            	dup2(fdout,STDOUT_FILENO);
+			close(fdout);
 	            }
 	            
                 execv(cmd->name,cmd->argv);
