@@ -444,13 +444,16 @@ static void RunBuiltInCmd(commandT* cmd)
   		
   		while (current != NULL)
   		{
-  			printf("alias %s='%s'\n", current->name, current->cmdLine);
+  			printf("alias %s=\'%s\'\n", current->name, current->cmdLine);
   			current = current->next;
   		}
   	}
   	
   	else
   	{
+  		//check for escape characters 
+  		
+  		
   		//add the command specified to the alias list
   		char* aliasString = cmd->argv[1];
   		aliasNode* current = aliasHead;
@@ -473,6 +476,16 @@ static void RunBuiltInCmd(commandT* cmd)
   		}
   		firstQuoteIndex = i;
   		i++;
+  		
+  		//check if there is an equal right before. If not, return error
+  		if (cmd->argv[1][i-1]!=61){
+  			//not an =
+  			printf("Invalid command\n");
+  			return;
+  		}
+  		
+  		
+  		
   	
   		while (cmd->argv[1][i]!=quotes){
   			printf("%c %c \n", cmd->argv[1][i], quotes);
