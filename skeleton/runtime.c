@@ -440,7 +440,7 @@ static void RunBuiltInCmd(commandT* cmd)
   	
   	if (cmd->argv[1]== NULL)
   	{
-  		aliasNode current = aliasHead;
+  		aliasNode* current = aliasHead;
   		
   		while (current != NULL)
   		{
