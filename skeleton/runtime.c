@@ -503,6 +503,7 @@ static void RunBuiltInCmd(commandT* cmd)
 					if (previous==NULL){
 							//then just set the head to the next one
 							aliasHead = current->next;
+							free(current);
 					}
 					
 					//otherwise
@@ -512,8 +513,8 @@ static void RunBuiltInCmd(commandT* cmd)
 							free(current);
 					}
 			}
+			previous = current;
 			current = current->next;
-			previous = previous->next;
 		}
   }
   
