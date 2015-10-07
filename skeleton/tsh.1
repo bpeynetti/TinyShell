@@ -1,1 +1,122 @@
-This is the man for the tiny shell
+TSH(1)                     User Manuals                    TSH(1)
+
+NAME
+     tsh - runs a tiny shell implementation
+
+SYNOPSIS
+     ./tsh
+
+DESCRIPTION
+    tsh is an implementation of a tiny shell in a UNIX environment.
+    The program takes the input of the user on the stdin command line,
+    and interprets the input as a UNIX command.
+
+    We have 2 types of commands: executable and built-in filess. 
+    
+    The executable files will simply reach out to PATH/filename and execute
+    with a list of arguments. (e.g. echo hello world --> will run /bin/echo
+    with argument list {"/bin/echo","hello","world"}
+    
+    The built-in commands supported by tsh are fg, bg, exit, jobs, and cd. 
+    These are implemented in the RunBuiltInCmd function, which performs the 
+    work related to each of them. fg and bg are implemented with kill() by sending
+    signals to specific processes, found through jobs. 
+    jobs loops and prints all processes. cd changes directory, and exit terminates
+    the shell. 
+    
+    In order to execute any command, tsh first has to create a child process
+    and allow that child process to take over execution of the program
+    specified above. To create the child program, tsh uses the fork()
+    system call. This creates a new child process and assigns it a process id.
+    After this point, the tsh program runs on both the parent and child
+    processes, so the program must support properly managing the lifecycles
+    of each created process. After this, the execv() function is called, which
+    executes the command specified with the arguments specified. If the
+    created child process runs in the foreground, the shell needs to wait
+    until it has completed before continuing execution. This is achieved by
+    sending the parent process to a while loop that orders it to continue
+    sleeping until the child process is no longer in the foreground.
+    
+    The job control is implemented through a few functions and data structures. 
+    The data structure holding all jobs is a linked list, which has a pointer to 
+    the head of the list, jobHead. When a new job is inserted, a new node is created
+    and the node is placed this is placed at the tail.
+    
+    The function CheckJobs() will run every loop on the shell and 
+    take care of any terminated background jobs. If they are terminated, it simply
+    removes them from the list. PrintJobs() implements the jobs command by stepping
+    through the job list and printing the job and status of each. 
+    The linked list also has a pointer to the tail, jobTail, which currently has
+    no advantages but it would allow jobs to be added in O(1). We considered
+    a doubly linked list implementation but a singly linked list was efficient
+    and good enough for the purposes of this project. 
+    
+    I/O redirection is managed in the Exec function and calls to the RunCmdRedirIn
+    and RunCmdRedirOut functions. Since the parsing of the command will save the filename
+    and the type of redirection, then it's a simple create/open file using file 
+    descriptors, and setting the correct permissions (user readable). We used
+    the function dup2() to redirect output to/from a file rather than the standard 
+    file for stdin and stdout. 
+    
+    In order for the tiny shell to function properly, it must correctly
+    handle the signals thrown by processes within the shell. Most notably,
+    it includes functionality for handling the SIGTSTP, SIGINT and SIGCHLD
+    signals thrown by the operating system. These signals are caught in
+    tsh.c and handled in runtime.c, where each has a function associated with
+    handling the signal. The result of each signal being thrown can be seen below:
+    
+    SIGTSTP -> this signal, triggered by ctrl-z on a UNIX command line,
+    stops the current foreground process as well as any of its descendents
+    (processes that it forked). When it is handled, the kill() system call
+    is used to send a SIGTSTP signal to the foreground job and all descendents.
+    In order to send the signal to the appropriate processes, the kill() system
+    call receives -fgpid as the pid argument, where fgpid is the process id
+    number of the process currently in the foreground.
+    
+    SIGINT -> this signal, triggered by ctrl-c on a UNIX command line, 
+    kills the current foreground process as well as any of its descendents
+    (processes that it forked). To handle the SIGINT signal, the kill() system
+    call is used. The kill() system call receives -fgpid as the pid argument,
+    where fgpid is the process id number of the process currently in the
+    foreground, in order to kill this process along with all its descendents.
+    
+    SIGCHLD -> this signal, triggered by a change in a child process, is caught
+    by ChildHandler(). The change can be due to a child process stopping or 
+    terminating. If it stopped or terminated, UpdateJobs() will handle changing the
+    state of the job. It will also return control to the tsh (fgpid=-1) regardless
+    of what happened. 
+    
+OPTIONS
+     - unfortunately, no options
+
+FILES
+     /etc/foo.conf
+          The system wide configuration file. See foo(5) for fur-
+          ther details.
+     ~/.foorc
+          Per  user  configuration  file.  See foo(5) for further
+          details.
+
+ENVIRONMENT
+     PATH - it is looked at to run commands
+
+DIAGNOSTICS
+     The following diagnostics may be issued on stderr:
+
+     Bad magic number.
+          The input file does not look like an archive file.
+     Old style baz segments.
+          foo  can  only  handle  new  style  baz segments. COBOL
+          object libraries are not supported in this version.
+
+BUGS
+     None that we know of.
+
+AUTHOR
+     Jacob Kobza <jacobkobza2016@u.northwestern.edu>
+     Bruno Peynetti <bpeynetti@u.northwestern.edu>
+     
+SEE ALSO
+     nothing else to see
+
+Linux                Last change: OCT 6 2015                    2

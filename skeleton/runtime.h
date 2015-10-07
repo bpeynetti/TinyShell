@@ -64,14 +64,14 @@ typedef struct command_t
   char* argv[];
 } commandT;
 
-typedef struct bgjob_l {
+typedef struct job_node {
   pid_t pid;
   pid_t jid;
   int state;
   char *cmdline;
   bool printedJob;
-  struct bgjob_l* next;
-} bgjobL;
+  struct job_node* next;
+} jobNode;
 
 /************Global Variables*********************************************/
 #define FOREGROUND 0
@@ -197,8 +197,8 @@ EXTERN void WaitFg(pid_t pid);
 EXTERN void ChildHandler();
 EXTERN void InterruptProcessHandler();
 EXTERN void StopProcessHandler();
-EXTERN bgjobL* FindJob(pid_t id, bool Process);
-EXTERN void ReleaseJob(bgjobL* job);
+EXTERN jobNode* FindJob(pid_t id, bool Process);
+EXTERN void ReleaseJob(jobNode* job);
 EXTERN void AddJob(pid_t pid, int state, char* cmdline);
 EXTERN void PrintJobs();
 

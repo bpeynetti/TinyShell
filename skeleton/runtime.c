@@ -67,9 +67,9 @@
 
 
 /* the pids of the background processes */
-bgjobL *bgjobs = NULL;
-bgjobL *lastJob = NULL;
-// bgjobL *lastJob = NULL; //ptr to end of the job list
+jobNode *jobHead = NULL;
+jobNode *jobTail = NULL;
+// jobNode *jobTail = NULL; //ptr to end of the job list
 
 // the next job id 
 int nextJobId = 1;
@@ -139,12 +139,36 @@ void RunCmdPipe(commandT* cmd1, commandT* cmd2)
 
 void RunCmdRedirOut(commandT* cmd, char* file)
 {
-	//redirection implemented in Exec
+	int fdout;
+	
+    //check redirection out
+	//create or open the file to use, with proper permissions
+	fdout = creat(cmd->redirect_out,S_IRUSR|S_IWUSR);
+	if (fdout<0){
+		perror("cannot open redirect out file");
+		exit(0);
+	}
+	//printf("Redirect out %s\n",cmd->redirect_out);
+    //yes, so redirect with dup2
+    dup2(fdout,STDOUT_FILENO);
+	close(fdout);
 }
 
 void RunCmdRedirIn(commandT* cmd, char* file)
 {
-	//redirection implemented in Exec
+	int fdin;
+	//check redirection in, with proper permissions
+	fdin = open(cmd->redirect_in,O_RDONLY,S_IRUSR|S_IWUSR);
+	if (fdin<0){
+		//error
+		perror("Cannot open redirect in file");
+		exit(0);
+	}
+
+	//printf("Redirect in %s\n",cmd->redirect_in);
+	//yes, so redirect with dup2
+	dup2(fdin,STDIN_FILENO);
+	close(fdin);
 }
 
 
@@ -217,19 +241,14 @@ static void Exec(commandT* cmd, bool forceFork)
         sigaddset(&mask,SIGCHLD);
         sigaddset(&mask,SIGINT);
         sigaddset(&mask,SIGTSTP);
-        //blocks the signals specified above
+        //blocks the signals specified above, before calling the children
         sigprocmask(SIG_BLOCK, &mask, NULL);
 
-        //make copy of arguments without the command
-        //int i=0;
-        //char* argArray[cmd->argc-1];
-        //for (i=0;i<cmd->argc-1;i++){
-        //        argArray[i] = strdup(cmd->argv[i+1]);
-        //}
+
         pid = fork();
         //check for fork error
         if (pid < 0){
-                printf("Fork Error\n");//err_sys("fork error");
+                perror("Fork Error\n");
         }
         // //successful fork
         // else {
@@ -240,37 +259,11 @@ static void Exec(commandT* cmd, bool forceFork)
 	            sigprocmask(SIG_UNBLOCK, &mask, NULL);
 	            
 	            //check for redirections
-	            
-	//copy this to redirect in call
-	            //check redirection in
 	            if (cmd->is_redirect_in==1){
-			int fdin;
-			fdin = open(cmd->redirect_in,O_RDONLY,S_IRUSR|S_IWUSR);
-			if (fdin<0){
-				//error
-				perror("Cannot open redirect in file");
-				exit(0);
-			}
-			
-			//printf("Redirect in %s\n",cmd->redirect_in);
-	            	//yes, so redirect with dup2
-	            	dup2(fdin,STDIN_FILENO);
-	            	close(fdin);
-		    }
-	//copy this to redirect out call
-	            //check redirection out
+		            RunCmdRedirIn(cmd, cmd->redirect_in);
+	            }
 	            if (cmd->is_redirect_out==1){
-			//create or open the file to use
-			int fdout;
-			fdout = creat(cmd->redirect_out,S_IRUSR|S_IWUSR);
-			if (fdout<0){
-				perror("cannot open redirect out file");
-				exit(0);
-			}
-			//printf("Redirect out %s\n",cmd->redirect_out);
-	            	//yes, so redirect with dup2
-	            	dup2(fdout,STDOUT_FILENO);
-			close(fdout);
+	           		RunCmdRedirOut(cmd,cmd->redirect_out);
 	            }
 	            
                 execv(cmd->name,cmd->argv);
@@ -287,6 +280,7 @@ static void Exec(commandT* cmd, bool forceFork)
                 //printf("Adding job %d \n",pid);
                 fgpid = pid;
                 AddJob(pid, FOREGROUND, cmd->cmdline);
+                //in the foreground, so go wait for it to finish
                 WaitFg(pid);
             }
           }
@@ -354,7 +348,7 @@ static void RunBuiltInCmd(commandT* cmd)
 			//get the job id as an integer
 			pid_t jid = atoi(cmd->argv[1]);
 			//find job
-			bgjobL* jobTofg = FindJob(jid,FALSE);
+			jobNode* jobTofg = FindJob(jid,FALSE);
 			//now change state to foreground
 			if (jobTofg==NULL){
 				printf("Job does not exist \n");
@@ -391,7 +385,7 @@ static void RunBuiltInCmd(commandT* cmd)
       //get the job id as an integer
       pid_t jid = atoi(cmd->argv[1]);
       //find the job in the list
-      bgjobL* jobToBg = FindJob(jid, FALSE);
+      jobNode* jobToBg = FindJob(jid, FALSE);
       if (jobToBg == NULL)
       {
         printf("Job does not exist \n");
@@ -430,7 +424,8 @@ static void RunBuiltInCmd(commandT* cmd)
 
 void PrintJobs()
 {
-	bgjobL* current = bgjobs;
+	//iterate over all joobs and print their status
+	jobNode* current = jobHead;
 	const char* state;
 	while (current != NULL)
 	{
@@ -483,11 +478,10 @@ void ReleaseCmdT(commandT **cmd){
 
 // job stuff
 void AddJob(pid_t pid, int state, char* cmdline){
-    //modify this so that there is a pointer to the end of the job list
     
-    bgjobL* current = bgjobs;
-    bgjobL* nextJob = (bgjobL*) malloc(sizeof(bgjobL));
-    //now assign the same pid, state, and all that
+    jobNode* current = jobHead;
+    jobNode* nextJob = (jobNode*) malloc(sizeof(jobNode));
+    //now assign the same pid, state, and all other relevant information
     //and job id is whatever's next
     nextJob->state = state;
     nextJob->pid = pid;
@@ -509,8 +503,8 @@ void AddJob(pid_t pid, int state, char* cmdline){
     //add the job to end of list of jobs
     if (current == NULL)
     {
-        bgjobs = nextJob;
-        lastJob = nextJob;
+        jobHead = nextJob;
+        jobTail = nextJob;
     }
     else
     {
@@ -520,11 +514,11 @@ void AddJob(pid_t pid, int state, char* cmdline){
         }
         current->next = nextJob;
     }
-    lastJob = nextJob;
+    jobTail = nextJob;
 }
 
-bgjobL* FindJob(pid_t id, bool Process){
-    bgjobL* current = bgjobs;
+jobNode* FindJob(pid_t id, bool Process){
+    jobNode* current = jobHead;
     pid_t check;
     //iterate over all jobs until you find it
     //Process  = true for pid, false for job id
@@ -553,7 +547,7 @@ bgjobL* FindJob(pid_t id, bool Process){
 
 void UpdateJobs(pid_t pid, int state)
 {
-  bgjobL* job;
+  jobNode* job;
   job = FindJob(pid, TRUE);
   
  // printf("%d\n", job->state);
@@ -581,15 +575,15 @@ void UpdateJobs(pid_t pid, int state)
   }
 }
 
-void ReleaseJob(bgjobL* job)
+void ReleaseJob(jobNode* job)
 {
     free(job->cmdline);
     free(job);
 }
 
 void CheckJobs(){
-    bgjobL* thisJob = bgjobs;
-    bgjobL* prevJob = NULL;
+    jobNode* thisJob = jobHead;
+    jobNode* prevJob = NULL;
     
     //iterate over all jobs and kill if necessary
     while (thisJob != NULL){
@@ -605,9 +599,9 @@ void CheckJobs(){
             }
 
             if (prevJob == NULL){
-                bgjobs = thisJob->next;
+                jobHead = thisJob->next;
                 ReleaseJob(thisJob);
-                thisJob = bgjobs;
+                thisJob = jobHead;
             } 
             else 
             {
@@ -625,7 +619,7 @@ void CheckJobs(){
         }
       
     }
-    if (bgjobs==NULL)
+    if (jobHead==NULL)
     {
         //no more jobs, reset job id
         nextJobId = 1;
@@ -634,7 +628,7 @@ void CheckJobs(){
 
 void WaitFg(pid_t pid)
 {
-    bgjobL* job = FindJob(pid,TRUE);
+    jobNode* job = FindJob(pid,TRUE);
     //while job still in the foreground
     while (job->state==FOREGROUND && job!=NULL)
     {
