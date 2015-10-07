@@ -208,6 +208,8 @@ EXTERN jobNode* FindJob(pid_t id, bool Process);
 EXTERN void ReleaseJob(jobNode* job);
 EXTERN void AddJob(pid_t pid, int state, char* cmdline);
 EXTERN void PrintJobs();
+EXTERN bool IsAlias(char* aliasName);
+EXTERN void RunAlias(char* aliasName);
 
 
 #endif /* __RUNTIME_H__ */
