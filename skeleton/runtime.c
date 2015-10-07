@@ -437,53 +437,67 @@ static void RunBuiltInCmd(commandT* cmd)
   
   if (strcmp(cmd->argv[0], "alias") == 0)
   {
-  	//add the command specified to the alias list
-  	char* aliasString = cmd->argv[1];
-  	aliasNode* current = aliasHead;
   	
-  	//PARSING FOR QUOTATIONS
-  	int i=0;
-  	int quotesFound = 0;
-  	int firstQuoteIndex = 0;
-  	int secondQuoteIndex = 0;
-  	char quotes = 39;
-  	// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
-  	
-  	while (cmd->argv[1][i]!=quotes){
-  		printf("%c %c \n", cmd->argv[1][i], quotes);
-  		if (cmd->argv[1][i]==0){
-  			printf("Invalid command\n");
-  			return;
+  	if (sizeof(cmd->argv) == 1)
+  	{
+  		aliasNode current = aliasHead;
+  		
+  		while (current != NULL)
+  		{
+  			printf("alias %s='%s'\n", current->name, current->cmdLine);
+  			current = current->next;
   		}
-  		i++;
   	}
-  	firstQuoteIndex = i;
-  	i++;
   	
-  	while (cmd->argv[1][i]!=quotes){
-  		printf("%c %c \n", cmd->argv[1][i], quotes);
-  		if (cmd->argv[1][i]==0){
-  			printf("Invalid command \n");
-  			return;
+  	else
+  	{
+  		//add the command specified to the alias list
+  		char* aliasString = cmd->argv[1];
+  		aliasNode* current = aliasHead;
+  	
+	  	//PARSING FOR QUOTATIONS
+	  	int i=0;
+	  	int quotesFound = 0;
+  		int firstQuoteIndex = 0;
+  		int secondQuoteIndex = 0;
+  		char quotes = 39;
+  		// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
+  	
+  		while (cmd->argv[1][i]!=quotes){
+  			printf("%c %c \n", cmd->argv[1][i], quotes);
+  			if (cmd->argv[1][i]==0){
+  				printf("Invalid command\n");
+  				return;
+  			}
+  			i++;
   		}
+  		firstQuoteIndex = i;
   		i++;
+  	
+  		while (cmd->argv[1][i]!=quotes){
+  			printf("%c %c \n", cmd->argv[1][i], quotes);
+  			if (cmd->argv[1][i]==0){
+  				printf("Invalid command \n");
+  				return;
+  			}
+  			i++;
+  		}
+  		secondQuoteIndex = i;
+  	
+  		char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
+  		char* commandName = malloc(sizeof(char) * (firstQuoteIndex-1));
+  	
+	 	strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
+  		strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex);
+  	
+  		//come up with command as variable with the command name
+  		//come up with commandLine as variable with the command line entry
+  	
+  		aliasHead = malloc(sizeof(aliasNode));
+  		aliasHead->next = current;
+  		aliasHead->name = commandName;
+  		aliasHead->cmdLine = commandLine;
   	}
-  	secondQuoteIndex = i;
-  	
-  	char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
-  	char* commandName = malloc(sizeof(char) * (firstQuoteIndex-1));
-  	
-  	strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
-  	strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex);
-  	
-  	//come up with command as variable with the command name
-  	//come up with commandLine as variable with the command line entry
-  	
-  	aliasHead = malloc(sizeof(aliasNode));
-  	aliasHead->next = current;
-  	aliasHead->name = commandName;
-  	aliasHead->cmdLine = commandLine;
-  	
   	
   }
 
