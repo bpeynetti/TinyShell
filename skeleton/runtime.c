@@ -107,9 +107,9 @@ void RunCmd(commandT** cmd, int n)
   total_task = n;
   //printf("Command name: %s \n",cmd[0]->argv[0]);
   //printf("Command argument count: %d \n",cmd[0]->argc-1);
-  if (IsAlias(cmd->argv[0]))
+  if (IsAlias(&(cmd->argv[0])))
   {
-    RunAlias(cmd->argv[0]);
+    RunAlias(&(cmd->argv[0]));
   }
   else
   {
