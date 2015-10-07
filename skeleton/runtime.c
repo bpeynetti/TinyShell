@@ -447,10 +447,10 @@ static void RunBuiltInCmd(commandT* cmd)
   	int firstQuoteIndex = 0;
   	int secondQuoteIndex = 0;
   	char quotes = "'";
-  	int sizeArgv1 = sizeof(cmd->argv[1])/sizeof(char*);
+  	// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
   	
   	while (cmd->argv[1][i]!=quotes){
-  		if (i==sizeArgv1){
+  		if (cmd->argv[1][i]==0){
   			printf("Invalid command\n");
   			return;
   		}
@@ -459,7 +459,7 @@ static void RunBuiltInCmd(commandT* cmd)
   	firstQuoteIndex = i;
   	
   	while (cmd->argv[1][i]!=quotes){
-  		if (i==sizeArgv1){
+  		if (cmd->argv[1][i]==0){
   			printf("Invalid command \n");
   		}
   		i++;
