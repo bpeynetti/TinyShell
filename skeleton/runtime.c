@@ -438,7 +438,7 @@ static void RunBuiltInCmd(commandT* cmd)
   if (strcmp(cmd->argv[0], "alias") == 0)
   {
   	
-  	if (sizeof(cmd->argv) == 1)
+  	if (cmd->argv[1]== NULL)
   	{
   		aliasNode current = aliasHead;
   		
