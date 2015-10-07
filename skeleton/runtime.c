@@ -155,36 +155,36 @@ void RunCmdPipe(commandT* cmd1, commandT* cmd2)
 
 void RunCmdRedirOut(commandT* cmd, char* file)
 {
-	int fdout;
-	
+  int fdout;
+  
     //check redirection out
-	//create or open the file to use, with proper permissions
-	fdout = creat(cmd->redirect_out,S_IRUSR|S_IWUSR);
-	if (fdout<0){
-		perror("cannot open redirect out file");
-		exit(0);
-	}
-	//printf("Redirect out %s\n",cmd->redirect_out);
+  //create or open the file to use, with proper permissions
+  fdout = creat(cmd->redirect_out,S_IRUSR|S_IWUSR);
+  if (fdout<0){
+    perror("cannot open redirect out file");
+    exit(0);
+  }
+  //printf("Redirect out %s\n",cmd->redirect_out);
     //yes, so redirect with dup2
     dup2(fdout,STDOUT_FILENO);
-	close(fdout);
+  close(fdout);
 }
 
 void RunCmdRedirIn(commandT* cmd, char* file)
 {
-	int fdin;
-	//check redirection in, with proper permissions
-	fdin = open(cmd->redirect_in,O_RDONLY,S_IRUSR|S_IWUSR);
-	if (fdin<0){
-		//error
-		perror("Cannot open redirect in file");
-		exit(0);
-	}
+  int fdin;
+  //check redirection in, with proper permissions
+  fdin = open(cmd->redirect_in,O_RDONLY,S_IRUSR|S_IWUSR);
+  if (fdin<0){
+    //error
+    perror("Cannot open redirect in file");
+    exit(0);
+  }
 
-	//printf("Redirect in %s\n",cmd->redirect_in);
-	//yes, so redirect with dup2
-	dup2(fdin,STDIN_FILENO);
-	close(fdin);
+  //printf("Redirect in %s\n",cmd->redirect_in);
+  //yes, so redirect with dup2
+  dup2(fdin,STDIN_FILENO);
+  close(fdin);
 }
 
 
@@ -270,18 +270,18 @@ static void Exec(commandT* cmd, bool forceFork)
         // else {
         if (pid==0){
         //child
-	            setpgid(0, 0);
-	            //unblocks the signals specified above
-	            sigprocmask(SIG_UNBLOCK, &mask, NULL);
-	            
-	            //check for redirections
-	            if (cmd->is_redirect_in==1){
-		            RunCmdRedirIn(cmd, cmd->redirect_in);
-	            }
-	            if (cmd->is_redirect_out==1){
-	           		RunCmdRedirOut(cmd,cmd->redirect_out);
-	            }
-	            
+              setpgid(0, 0);
+              //unblocks the signals specified above
+              sigprocmask(SIG_UNBLOCK, &mask, NULL);
+              
+              //check for redirections
+              if (cmd->is_redirect_in==1){
+                RunCmdRedirIn(cmd, cmd->redirect_in);
+              }
+              if (cmd->is_redirect_out==1){
+                RunCmdRedirOut(cmd,cmd->redirect_out);
+              }
+              
                 execv(cmd->name,cmd->argv);
           }
           else{
@@ -329,46 +329,65 @@ static void RunBuiltInCmd(commandT* cmd)
                 return;
         }
 
-	if (strcmp(cmd->argv[0], "jobs")==0){
-		PrintJobs();
-	}
-	
-	if (strcmp(cmd->argv[0], "fg")==0){
-	    //bring process to foreground
-	    //the jid should have been given in the command so in argv[1]
-		
-		if (cmd->argv[1]==NULL){
-			//no job id given
-			printf("No job id \n");
-		}
-		else {
-			//get the job id as an integer
-			pid_t jid = atoi(cmd->argv[1]);
-			//find job
-			jobNode* jobTofg = FindJob(jid,FALSE);
-			//now change state to foreground
-			if (jobTofg==NULL){
-				printf("Job does not exist \n");
-				//job does not exist
-				return;
-			}
-			else {
-				if (jobTofg->state==STOPPED || jobTofg->state==BACKGROUND){
-					//continue if it wasn't already there
-					kill(-(jobTofg->pid),SIGCONT);
-				}
 
-				//and bring state to FOREGROUND
-				jobTofg->state = FOREGROUND;
-//				printf("Job %d brought to foreground: %s \n",jobTofg->jid,jobTofg->cmdline);
-				//now wait for it to finish
-				fgpid = jobTofg->pid;
-				WaitFg(jobTofg->pid);
-				
-			}
-			
-		}
-	}
+        //check for echo
+  /*
+        if (strcmp(cmd->argv[0],"echo")==0){
+                for (i=1;i<cmd->argc;i++){
+                        //check for environment var
+                        if (cmd->argv[i][0]=="$"){
+                                //get the 1st through n elements of this argument
+                                char* envVar = malloc(strlen((cmd->argv[i]))*sizeof(char));
+                                memcpy(envVar,cmd->argv[i]+sizeof(char),sizeof(char)*strlen(cmd->argv[i]));
+                                printf("%s ",getenv(envVar));
+                        }
+                        else{
+                                printf("%s ",cmd->argv[i]);
+                        }
+                }
+                printf("\n");
+        }
+  */
+  if (strcmp(cmd->argv[0], "jobs")==0){
+    PrintJobs();
+  }
+  
+  if (strcmp(cmd->argv[0], "fg")==0){
+      //bring process to foreground
+      //the jid should have been given in the command so in argv[1]
+    
+    if (cmd->argv[1]==NULL){
+      //no job id given
+      printf("No job id \n");
+    }
+    else {
+      //get the job id as an integer
+      pid_t jid = atoi(cmd->argv[1]);
+      //find job
+      jobNode* jobTofg = FindJob(jid,FALSE);
+      //now change state to foreground
+      if (jobTofg==NULL){
+        printf("Job does not exist \n");
+        //job does not exist
+        return;
+      }
+      else {
+        if (jobTofg->state==STOPPED || jobTofg->state==BACKGROUND){
+          //continue if it wasn't already there
+          kill(-(jobTofg->pid),SIGCONT);
+        }
+
+        //and bring state to FOREGROUND
+        jobTofg->state = FOREGROUND;
+//        printf("Job %d brought to foreground: %s \n",jobTofg->jid,jobTofg->cmdline);
+        //now wait for it to finish
+        fgpid = jobTofg->pid;
+        WaitFg(jobTofg->pid);
+        
+      }
+      
+    }
+  }
 
   if (strcmp(cmd->argv[0], "bg") == 0)
   {
@@ -390,195 +409,181 @@ static void RunBuiltInCmd(commandT* cmd)
       }
       else
       {
-	if (jobToBg->state == STOPPED || jobToBg->state == BACKGROUND)
-	{
-		kill(-(jobToBg->pid), SIGCONT);
-	}
-      	jobToBg->state = BACKGROUND; 
+  if (jobToBg->state == STOPPED || jobToBg->state == BACKGROUND)
+  {
+    kill(-(jobToBg->pid), SIGCONT);
+  }
+        jobToBg->state = BACKGROUND; 
       }
     }
   }
   
   if (strcmp(cmd->argv[0], "cd") == 0)
   {
-  	if (cmd->argv[1] == NULL)
-  	{
-  		if (chdir(getenv("HOME")) != 0)
-  		{
-  			printf("error in cd\n");
-  		}
-  	}
-  	else
-  	{
-  		if (chdir(cmd->argv[1]) != 0)
-  		{
-  			printf("error in cd\n");
-  		}
-  	}
+    if (cmd->argv[1] == NULL)
+    {
+      if (chdir(getenv("HOME")) != 0)
+      {
+        printf("error in cd\n");
+      }
+    }
+    else
+    {
+      if (chdir(cmd->argv[1]) != 0)
+      {
+        printf("error in cd\n");
+      }
+    }
   }
   
   if (strcmp(cmd->argv[0], "alias") == 0)
   {
-  	
-  	if (cmd->argv[1]== NULL)
-  	{
-  		aliasNode* current = aliasHead;
-  		
-  		while (current != NULL)
-  		{
-  			printf("alias %s=\'%s\'\n", current->name, current->cmdLine);
-  			current = current->next;
-  		}
-  	}
-  	
-  	else
-  	{
-  		//check for escape characters 
-  		
-  		
-  		//add the command specified to the alias list
-  		//char* aliasString = cmd->argv[1];
-  		aliasNode* current = aliasHead;
-  	
-	  	//PARSING FOR QUOTATIONS
-	  	int i=0;
-	  	//int quotesFound = 0;
-  		int firstQuoteIndex = 0;
-  		int secondQuoteIndex = 0;
-  		char quotes = 39;
-  		// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
-  	
-  		while (cmd->argv[1][i]!=quotes){
-  			//(debug: read the characters) printf("%c %c \n", cmd->argv[1][i], quotes);
-  			if (cmd->argv[1][i]==0){
-  				printf("Invalid command\n");
-  				return;
-  			}
-  			i++;
-  		}
-  		firstQuoteIndex = i;
-  		i++;
-  		
-  		//check if there is an equal right before. If not, return error
-  		if (cmd->argv[1][i-1]!=61){
-  			//not an =
-  			printf("Invalid command\n");
-  			return;
-  		}
-  		
-  		
-  		
-  	
-  		while (cmd->argv[1][i]!=quotes){
-  			// (debug -> read the characters) printf("%c %c \n", cmd->argv[1][i], quotes);
-  			if (cmd->argv[1][i]==0){
-  				printf("Invalid command \n");
-  				return;
-  			}
-  			i++;
-  		}
-  		secondQuoteIndex = i;
-  	
-  		char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
-  		char* commandName = malloc(sizeof(char) * (firstQuoteIndex-1));
-  	
-	 	strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
-  		strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex);
-  	
-  		//come up with command as variable with the command name
-  		//come up with commandLine as variable with the command line entry
-  	
-  		aliasHead = malloc(sizeof(aliasNode));
-  		aliasHead->next = current;
-  		aliasHead->name = commandName;
-  		aliasHead->cmdLine = commandLine;
-  	}
-  	
+    
+    if (cmd->argv[1]== NULL)
+    {
+      aliasNode* current = aliasHead;
+      
+      while (current != NULL)
+      {
+        printf("alias %s=\'%s\'\n", current->name, current->cmdLine);
+        current = current->next;
+      }
+    }
+    
+    else
+    {
+      
+      //add the command specified to the alias list
+      aliasNode* current = aliasHead;
+    
+      //PARSING FOR QUOTATIONS
+      int i=0;
+      int firstQuoteIndex = 0;
+      int secondQuoteIndex = 0;
+      char quotes = 39;
+      // int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
+    
+      while (cmd->argv[1][i]!=quotes){
+        //printf("%c %c \n", cmd->argv[1][i], quotes);
+        if (cmd->argv[1][i]==0){
+          printf("Invalid command\n");
+          return;
+        }
+        i++;
+      }
+      firstQuoteIndex = i;
+      i++;
+      
+      while (cmd->argv[1][i]!=quotes){
+        //printf("%c %c \n", cmd->argv[1][i], quotes);
+        if (cmd->argv[1][i]==0){
+          printf("Invalid command \n");
+          return;
+        }
+        i++;
+      }
+      secondQuoteIndex = i;
+    
+      char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
+      char* commandName = malloc(sizeof(char) * (firstQuoteIndex-1));
+    
+    strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
+      strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex+1);
+    
+      //come up with command as variable with the command name
+      //come up with commandLine as variable with the command line entry
+    
+      aliasHead = malloc(sizeof(aliasNode));
+      aliasHead->next = current;
+      aliasHead->name = commandName;
+      aliasHead->cmdLine = commandLine;
+    }
+    
   }
 
 
 
   if (strcmp(cmd->argv[0],"unalias") == 0)
   {
-		//remove alias from list of aliases
-		char* aliasName = cmd->argv[1];
-		aliasNode* current = aliasHead;
-		aliasNode* previous = NULL;
-		while (current != NULL)
-		{
-			if (strcmp(aliasName,current->name)==0){
-			
-					//if it's at the head of the list
-					if (previous==NULL){
-							//then just set the head to the next one
-							aliasHead = current->next;
-							free(current);
-					}
-					
-					//otherwise
-					else {
-							//point the previous to the next one
-							previous->next = current->next;
-							free(current);
-					}
-			}
-			previous = current;
-			current = current->next;
-		}
+    //remove alias from list of aliases
+    char* aliasName = cmd->argv[1];
+    aliasNode* current = aliasHead;
+    aliasNode* previous = NULL;
+    while (current != NULL)
+    {
+      if (strcmp(aliasName,current->name)==0){
+      
+          //if it's at the head of the list
+          if (previous==NULL){
+              //then just set the head to the next one
+              aliasHead = current->next;
+              free(current);
+          }
+          
+          //otherwise
+          else {
+              //point the previous to the next one
+              previous->next = current->next;
+              free(current);
+          }
+      }
+      previous = current;
+      current = current->next;
+    }
   }
   
 }
 
 bool IsAlias(char* aliasName){
-	
-	aliasNode* current = aliasHead;
-	while (current != NULL)
-	{
-		if (strcmp(aliasName,current->name)==0){
-			return TRUE;
-		}
-		current = current->next;
-	}
-	return FALSE;
+  
+  aliasNode* current = aliasHead;
+  while (current != NULL)
+  {
+    if (strcmp(aliasName,current->name)==0){
+      return TRUE;
+    }
+    current = current->next;
+  }
+  return FALSE;
 }
 
 void RunAlias(char* aliasName){
-	
-	aliasNode* current = aliasHead;
-	while (current != NULL)
-	{
-		if (strcmp(aliasName,current->name)==0){
-			Interpret(current->cmdLine);
-		}
-		current = current->next;
-	}
-	//it gets here when the interpreter has finished executing
+  
+  aliasNode* current = aliasHead;
+  while (current != NULL)
+  {
+    if (strcmp(aliasName,current->name)==0){
+      Interpret(current->cmdLine);
+    }
+    current = current->next;
+  }
+  //it gets here when the interpreter has finished executing
 
 }
 
 void PrintJobs()
 {
-	//iterate over all joobs and print their status
-	jobNode* current = jobHead;
-	const char* state;
-	while (current != NULL)
-	{
-		if (current->state == BACKGROUND)
-		{
-			state = "Running";
-			printf("[%d]   %s                 %s &\n", current->jid, state, current->cmdline);
-			fflush(stdout);
-		}
-		else if (current->state == STOPPED)
-		{
-			state = "Stopped";
-			printf("[%d]   %s                 %s\n", current->jid, state, current->cmdline);
-			fflush(stdout);
-		}
+  //iterate over all joobs and print their status
+  jobNode* current = jobHead;
+  const char* state;
+  while (current != NULL)
+  {
+    if (current->state == BACKGROUND)
+    {
+      state = "Running";
+      printf("[%d]   %s                 %s &\n", current->jid, state, current->cmdline);
+      fflush(stdout);
+    }
+    else if (current->state == STOPPED)
+    {
+      state = "Stopped";
+      printf("[%d]   %s                 %s\n", current->jid, state, current->cmdline);
+      fflush(stdout);
+    }
 
-		current = current->next;
-		
-	}
+    current = current->next;
+    
+  }
 }
 
 
@@ -691,7 +696,7 @@ void UpdateJobs(pid_t pid, int state)
   {
     if (state == DONE && job->state != BACKGROUND)
     {
-	job->printedJob = TRUE;
+  job->printedJob = TRUE;
     }
     job->state = state;
     if (state == STOPPED)
@@ -726,9 +731,9 @@ void CheckJobs(){
             if (thisJob->printedJob == FALSE){
               printf("[%d]   Done                 %s \n", thisJob->jid,thisJob->cmdline);
               thisJob->printedJob = TRUE;
-	    }
+      }
             else {
-            	//give control to the shell
+              //give control to the shell
               fgpid = - 1;
             }
 
@@ -781,7 +786,7 @@ void InterruptProcessHandler()
   //kills the foreground process if you're in the parent
   if (fgpid > 0)
   {
-  //	printf("This is killing a process %d \n",fgpid);
+  //  printf("This is killing a process %d \n",fgpid);
         //kills the process, throws a SIGINT
         kill(-fgpid, SIGINT);
   }
