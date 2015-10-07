@@ -73,6 +73,13 @@ typedef struct job_node {
   struct job_node* next;
 } jobNode;
 
+typedef struct alias_ndoe {
+  char* name;
+  char* cmdLine;
+  struct alias_node* next;
+} aliasNode;
+
+
 /************Global Variables*********************************************/
 #define FOREGROUND 0
 #define BACKGROUND 1

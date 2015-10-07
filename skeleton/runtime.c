@@ -71,6 +71,9 @@ jobNode *jobHead = NULL;
 jobNode *jobTail = NULL;
 // jobNode *jobTail = NULL; //ptr to end of the job list
 
+//alias stuff
+aliasNode *aliasHead = NULL;
+
 // the next job id 
 int nextJobId = 1;
 // foreground process
@@ -93,6 +96,10 @@ static bool IsBuiltIn(char*);
 
 /**************Implementation***********************************************/
 int total_task;
+
+
+
+
 void RunCmd(commandT** cmd, int n)
 {
   int i;
@@ -100,9 +107,9 @@ void RunCmd(commandT** cmd, int n)
   total_task = n;
   //printf("Command name: %s \n",cmd[0]->argv[0]);
   //printf("Command argument count: %d \n",cmd[0]->argc-1);
-  if (isAlias(cmd->argv[0]))
+  if (IsAlias(cmd->argv[0]))
   {
-    RunAlias(cmd);
+    RunAlias(cmd->argv[0]);
   }
   else
   {
@@ -299,9 +306,9 @@ static void Exec(commandT* cmd, bool forceFork)
 static bool IsBuiltIn(char* cmd)
 {
   int i=0;
-  int numberOfCommands = 5;
+  int numberOfCommands = 7;
  // printf("You are trying to run the command %s \n",cmd);
-  char* commands[5] = {"exit", "jobs","fg", "bg", "cd"};
+  char* commands[7] = {"exit", "jobs","fg", "bg", "cd", "alias", "unalias"};
   for (i=0;i<numberOfCommands;i++){
         if (strcmp(cmd,commands[i])==0){
                 //printf("And it's built-in! \n");
@@ -427,6 +434,111 @@ static void RunBuiltInCmd(commandT* cmd)
   		}
   	}
   }
+  
+  if (strcmp(cmd->argv[0], "alias") == 0)
+  {
+  	//add the command specified to the alias list
+  	char* aliasString = cmd->argv[1];
+  	aliasNode* current = aliasHead;
+  	
+  	//PARSING FOR QUOTATIONS
+  	int i=0;
+  	int quotesFound = 0;
+  	int firstQuoteIndex = 0;
+  	int secondQuoteIndex = 0;
+  	char quotes = "'";
+  	int sizeArgv1 = sizeof(cmd->argv[1])/sizeof(char*);
+  	
+  	while (cmd->argv[1][i]!=quotes){
+  		if (i==sizeArgv1){
+  			printf("Invalid command\n");
+  			return;
+  		}
+  		i++;
+  	}
+  	firstQuoteIndex = i;
+  	
+  	while (cmd->argv[1][i]!=quotes){
+  		if (i==sizeArgv1){
+  			printf("Invalid command \n");
+  		}
+  		i++;
+  	}
+  	secondQuoteIndex = i;
+  	
+  	char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
+  	char* commandName = malloc(sizeof(char) * (firstQuoteIndex-1));
+  	
+  	strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
+  	strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex);
+  	
+  	//come up with command as variable with the command name
+  	//come up with commandLine as variable with the command line entry
+  	
+  	commandT * cd = malloc(sizeof(commandT) + sizeof(char *) * (n + 1));
+  	
+  	aliasHead = malloc(sizeof(aliasNode));
+  	aliasHead->next = current;
+  	aliasHead->name = command;
+  	aliasHead->cmdLine = commandLine;
+  	
+  	
+  }
+
+
+
+  if (strcmp(cmd->argv[0],"unalias") == 0)
+  {
+		//remove alias from list of aliases
+		char* aliasName = cmd->argv[1]
+		aliasNode* current = aliasHead;
+		aliasNode* previous = NULL;
+		while (current != NULL)
+		{
+			if (strcmp(aliasName,current->name)==0){
+			
+					//if it's at the head of the list
+					if (previous==NULL){
+							//then just set the head to the next one
+							aliasHead = current->next;
+					}
+					
+					//otherwise
+					else {
+							//point the previous to the next one
+							previous->next = current->next;
+							free(current);
+					}
+			}
+		}
+  }
+  
+}
+
+bool IsAlias(char* aliasName){
+	
+	aliasNode* current = aliasHead;
+	while (current != NULL)
+	{
+		if (strcmp(aliasName,current->name)==0){
+			return TRUE;
+		}
+		current = current->next;
+	}
+	return FALSE;
+}
+
+void RunAlias(char* aliasName){
+	
+	aliasNode* current = aliasHead;
+	while (current != NULL)
+	{
+		if (strcmp(aliasName,current->name)==0){
+			Interpret(current->cmdLine);
+		}
+		current = current->next;
+	}
+	//it gets here when the interpreter has finished executing
 
 }
 
