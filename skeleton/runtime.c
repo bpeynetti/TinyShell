@@ -446,7 +446,7 @@ static void RunBuiltInCmd(commandT* cmd)
   	int quotesFound = 0;
   	int firstQuoteIndex = 0;
   	int secondQuoteIndex = 0;
-  	char quotes = "\""";
+  	char quotes = 39;
   	// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
   	
   	while (cmd->argv[1][i]!=quotes){
