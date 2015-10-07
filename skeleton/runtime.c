@@ -446,7 +446,7 @@ static void RunBuiltInCmd(commandT* cmd)
   	int quotesFound = 0;
   	int firstQuoteIndex = 0;
   	int secondQuoteIndex = 0;
-  	char quotes = 39;
+  	char quotes = "\""";
   	// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
   	
   	while (cmd->argv[1][i]!=quotes){
@@ -512,6 +512,8 @@ static void RunBuiltInCmd(commandT* cmd)
 							free(current);
 					}
 			}
+			current = current->next;
+			previous = previous->next;
 		}
   }
   
