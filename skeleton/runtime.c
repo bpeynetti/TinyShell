@@ -100,15 +100,23 @@ void RunCmd(commandT** cmd, int n)
   total_task = n;
   //printf("Command name: %s \n",cmd[0]->argv[0]);
   //printf("Command argument count: %d \n",cmd[0]->argc-1);
-  for ( count=1;count<cmd[0]->argc;count++){
-        //printf("Argument %d : %s \n",count,cmd[0]->argv[count]);
+  if (isAlias(cmd->argv[0]))
+  {
+    RunAlias(cmd);
   }
-  if(n == 1)
-    RunCmdFork(cmd[0], TRUE);
-  else{
-    RunCmdPipe(cmd[0], cmd[1]);
-    for(i = 0; i < n; i++)
-      ReleaseCmdT(&cmd[i]);
+  else
+  {
+
+    for ( count=1;count<cmd[0]->argc;count++){
+          //printf("Argument %d : %s \n",count,cmd[0]->argv[count]);
+    }
+    if(n == 1)
+      RunCmdFork(cmd[0], TRUE);
+    else{
+      RunCmdPipe(cmd[0], cmd[1]);
+      for(i = 0; i < n; i++)
+        ReleaseCmdT(&cmd[i]);
+    }
   }
 }
 
