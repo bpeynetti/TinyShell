@@ -73,7 +73,7 @@ typedef struct job_node {
   struct job_node* next;
 } jobNode;
 
-typedef struct alias_ndoe {
+typedef struct alias_node {
   char* name;
   char* cmdLine;
   struct alias_node* next;

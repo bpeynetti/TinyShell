@@ -52,6 +52,7 @@
 /************Private include**********************************************/
 #include "runtime.h"
 #include "io.h"
+#include "interpreter.h"
 
 /************Defines and Typedefs*****************************************/
 /*  #defines and typedefs should have their names in all caps.
@@ -328,25 +329,6 @@ static void RunBuiltInCmd(commandT* cmd)
                 return;
         }
 
-
-        //check for echo
-	/*
-        if (strcmp(cmd->argv[0],"echo")==0){
-                for (i=1;i<cmd->argc;i++){
-                        //check for environment var
-                        if (cmd->argv[i][0]=="$"){
-                                //get the 1st through n elements of this argument
-                                char* envVar = malloc(strlen((cmd->argv[i]))*sizeof(char));
-                                memcpy(envVar,cmd->argv[i]+sizeof(char),sizeof(char)*strlen(cmd->argv[i]));
-                                printf("%s ",getenv(envVar));
-                        }
-                        else{
-                                printf("%s ",cmd->argv[i]);
-                        }
-                }
-                printf("\n");
-        }
-	*/
 	if (strcmp(cmd->argv[0], "jobs")==0){
 		PrintJobs();
 	}
@@ -455,19 +437,19 @@ static void RunBuiltInCmd(commandT* cmd)
   		
   		
   		//add the command specified to the alias list
-  		char* aliasString = cmd->argv[1];
+  		//char* aliasString = cmd->argv[1];
   		aliasNode* current = aliasHead;
   	
 	  	//PARSING FOR QUOTATIONS
 	  	int i=0;
-	  	int quotesFound = 0;
+	  	//int quotesFound = 0;
   		int firstQuoteIndex = 0;
   		int secondQuoteIndex = 0;
   		char quotes = 39;
   		// int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
   	
   		while (cmd->argv[1][i]!=quotes){
-  			printf("%c %c \n", cmd->argv[1][i], quotes);
+  			//(debug: read the characters) printf("%c %c \n", cmd->argv[1][i], quotes);
   			if (cmd->argv[1][i]==0){
   				printf("Invalid command\n");
   				return;
@@ -488,7 +470,7 @@ static void RunBuiltInCmd(commandT* cmd)
   		
   	
   		while (cmd->argv[1][i]!=quotes){
-  			printf("%c %c \n", cmd->argv[1][i], quotes);
+  			// (debug -> read the characters) printf("%c %c \n", cmd->argv[1][i], quotes);
   			if (cmd->argv[1][i]==0){
   				printf("Invalid command \n");
   				return;
