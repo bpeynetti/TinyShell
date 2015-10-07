@@ -107,9 +107,9 @@ void RunCmd(commandT** cmd, int n)
   total_task = n;
   //printf("Command name: %s \n",cmd[0]->argv[0]);
   //printf("Command argument count: %d \n",cmd[0]->argc-1);
-  if (IsAlias(&(cmd->argv[0])))
+  if (IsAlias((&cmd->argv[0])))
   {
-    RunAlias(&(cmd->argv[0]));
+    RunAlias((&cmd->argv[0]));
   }
   else
   {
@@ -475,11 +475,9 @@ static void RunBuiltInCmd(commandT* cmd)
   	//come up with command as variable with the command name
   	//come up with commandLine as variable with the command line entry
   	
-  	commandT * cd = malloc(sizeof(commandT) + sizeof(char *) * (n + 1));
-  	
   	aliasHead = malloc(sizeof(aliasNode));
   	aliasHead->next = current;
-  	aliasHead->name = command;
+  	aliasHead->name = commandName;
   	aliasHead->cmdLine = commandLine;
   	
   	
@@ -490,7 +488,7 @@ static void RunBuiltInCmd(commandT* cmd)
   if (strcmp(cmd->argv[0],"unalias") == 0)
   {
 		//remove alias from list of aliases
-		char* aliasName = cmd->argv[1]
+		char* aliasName = cmd->argv[1];
 		aliasNode* current = aliasHead;
 		aliasNode* previous = NULL;
 		while (current != NULL)
