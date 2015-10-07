@@ -210,7 +210,6 @@ static bool ResolveExternalCmd(commandT* cmd)
 static void Exec(commandT* cmd, bool forceFork)
 {
         pid_t pid;
-        int status;
         //printf("%s \n",cmd->name);
         
         sigset_t mask;
@@ -314,7 +313,7 @@ static bool IsBuiltIn(char* cmd)
 static void RunBuiltInCmd(commandT* cmd)
 {
         //running built-in command
-        int i=0;
+        //int i=0;
         //check if it's exit
         if (strcmp(cmd->argv[0],"exit")==0){
                 return;

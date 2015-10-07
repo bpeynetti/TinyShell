@@ -199,7 +199,8 @@ EXTERN void InterruptProcessHandler();
 EXTERN void StopProcessHandler();
 EXTERN bgjobL* FindJob(pid_t id, bool Process);
 EXTERN void ReleaseJob(bgjobL* job);
-
+EXTERN void AddJob(pid_t pid, int state, char* cmdline);
+EXTERN void PrintJobs();
 
 
 #endif /* __RUNTIME_H__ */
