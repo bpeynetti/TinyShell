@@ -1,0 +1,262 @@
+scp -r -i id_aqualab -P 3022 * aqualab@localhost:~/.aqualab/project1/.
+ssh -i id_aqualab -p 3022 aqualab@localhost 'bash -s' < vm_test.sh
+Evaluating Test Cases on VM
+rm -f *.o *~
+cd testsuite;\
+	gcc -o myspin myspin.c
+cd testsuite;\
+	gcc -o mysplit mysplit.c
+cd testsuite;\
+	gcc -o mystop mystop.c
+tar cvf jjk613bpv512-`date +%Y%m%d%H%M%S`-tsh.tar Makefile *.h *.c tsh.1
+Makefile
+config.h
+interpreter.h
+io.h
+runtime.h
+tsh.h
+interpreter.c
+io.c
+runtime.c
+tsh.c
+tsh.1
+gzip jjk613bpv512-`date +%Y%m%d%H%M%S`-tsh.tar
+HANDIN=`pwd`/jjk613bpv512-`date +%Y%m%d%H%M%S`-tsh.tar.gz;\
+	cd testsuite;\
+	bash ./run_testcase.sh ${HANDIN} 32;
+Using reference shell 32
+Testing /home/aqualab/.aqualab/project1/jjk613bpv512-20151007194420-tsh.tar.gz
+
+UNTAR
+Makefile
+config.h
+interpreter.h
+io.h
+runtime.h
+tsh.h
+interpreter.c
+io.c
+runtime.c
+tsh.c
+tsh.1
+
+COMPILE
+compile /tmp/cs343.tests.s5GOSp/interpreter.c
+compile /tmp/cs343.tests.s5GOSp/io.c
+compile /tmp/cs343.tests.s5GOSp/runtime.c
+compile /tmp/cs343.tests.s5GOSp/tsh.c
+LINKING
+0 warning(s) found while compiling
+0 error(s) found while compiling
+
+RUN BASIC TEST CASES
+test01: PASS
+test02: PASS
+test03: PASS
+test04: PASS
+test05: PASS
+test06: PASS
+test07: PASS
+test08: PASS
+test09: PASS
+test10: PASS
+test11: PASS
+test12: PASS
+test13: PASS
+test14: PASS
+test15: PASS
+test16: PASS
+test17: PASS
+test18: PASS
+test19: PASS
+test20: PASS
+test21: PASS
+test22: PASS
+test23: PASS
+test24: PASS
+test25: PASS
+test26: PASS
+test27: PASS
+test28: PASS
+test29: PASS
+test30: PASS
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+30 basic test cases passed
+
+RUN EXTRA CREDIT TEST CASES
+test31: FAILED
+Input:
+ls -l | wc
+cat test.20 | wc
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+     25     218    1398							      <
+      3       8      43							      <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test32: FAILED
+Input:
+ls -l | grep test
+ls -l | grep 2
+ls -l | wc -l
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+-rw-r--r-- 1 aqualab aqualab   115 Oct  7 19:48 file1.test.txt		      <
+-rw-r--r-- 1 aqualab aqualab    12 Oct  7 19:48 file2.test.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  7 19:44 test1.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  7 19:44 test.20			      <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  7 19:44 test.200		      <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  7 19:44 test.23			      <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  7 19:44 test.3			      <
+-rw-rw-r-- 1 aqualab aqualab    39 Oct  7 19:44 test.4			      <
+-rw-rw-r-- 1 aqualab aqualab    47 Oct  7 19:44 test.5			      <
+total 228								      <
+-rw-r--r-- 1 aqualab aqualab    12 Oct  7 19:48 file2.test.txt		      <
+-rw-rw-r-- 1 aqualab aqualab   209 Oct  7 19:48 longlist.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  7 19:44 test1.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  7 19:44 test.20			      <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  7 19:44 test.200		      <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  7 19:44 test.23			      <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  7 19:44 test.3			      <
+-rw-rw-r-- 1 aqualab aqualab    15 Oct  7 19:44 text2.txt		      <
+-rwxrwxr-x 1 aqualab aqualab 47211 Oct  7 19:44 tsh			      <
+-rwxr-xr-x 1 aqualab aqualab 50370 Oct  7 19:44 tsh-orig.32		      <
+25									      <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test33: FAILED
+Input:
+ls -l | grep test
+ls -l | grep test | grep 2
+ls -l | grep test | grep 2 | wc
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+-rw-r--r-- 1 aqualab aqualab   115 Oct  7 19:48 file1.test.txt		      <
+-rw-r--r-- 1 aqualab aqualab    12 Oct  7 19:48 file2.test.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  7 19:44 test1.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  7 19:44 test.20			      <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  7 19:44 test.200		      <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  7 19:44 test.23			      <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  7 19:44 test.3			      <
+-rw-rw-r-- 1 aqualab aqualab    39 Oct  7 19:44 test.4			      <
+-rw-rw-r-- 1 aqualab aqualab    47 Oct  7 19:44 test.5			      <
+-rw-r--r-- 1 aqualab aqualab    12 Oct  7 19:48 file2.test.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  7 19:44 test1.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  7 19:44 test.20			      <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  7 19:44 test.200		      <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  7 19:44 test.23			      <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  7 19:44 test.3			      <
+      6      54     345							      <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test34: FAILED
+Input:
+ls -l test.3 test.4 test.5 test.23 | wc -w
+grep test longlist.txt
+cat longlist.txt
+grep 3 longlist.txt | wc -w | cat | wc
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+36									      <
+-rw-rw-r-- 1 aqualab aqualab 24 Oct  7 19:44 test.23				-rw-rw-r-- 1 aqualab aqualab 24 Oct  7 19:44 test.23
+-rw-rw-r-- 1 aqualab aqualab 23 Oct  7 19:44 test.3				-rw-rw-r-- 1 aqualab aqualab 23 Oct  7 19:44 test.3
+-rw-rw-r-- 1 aqualab aqualab 39 Oct  7 19:44 test.4				-rw-rw-r-- 1 aqualab aqualab 39 Oct  7 19:44 test.4
+-rw-rw-r-- 1 aqualab aqualab 47 Oct  7 19:44 test.5				-rw-rw-r-- 1 aqualab aqualab 47 Oct  7 19:44 test.5
+-rw-rw-r-- 1 aqualab aqualab 24 Oct  7 19:44 test.23				-rw-rw-r-- 1 aqualab aqualab 24 Oct  7 19:44 test.23
+-rw-rw-r-- 1 aqualab aqualab 23 Oct  7 19:44 test.3				-rw-rw-r-- 1 aqualab aqualab 23 Oct  7 19:44 test.3
+-rw-rw-r-- 1 aqualab aqualab 39 Oct  7 19:44 test.4				-rw-rw-r-- 1 aqualab aqualab 39 Oct  7 19:44 test.4
+-rw-rw-r-- 1 aqualab aqualab 47 Oct  7 19:44 test.5				-rw-rw-r-- 1 aqualab aqualab 47 Oct  7 19:44 test.5
+      1       1       3							      <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test35: FAILED
+Input:
+ls -l | grep test
+ls -l | grep test | grep 2
+ls -l | grep test | grep 2 | wc
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+-rw-r--r-- 1 aqualab aqualab   115 Oct  7 19:48 file1.test.txt		      <
+-rw-r--r-- 1 aqualab aqualab    12 Oct  7 19:48 file2.test.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  7 19:44 test1.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  7 19:44 test.20			      <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  7 19:44 test.200		      <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  7 19:44 test.23			      <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  7 19:44 test.3			      <
+-rw-rw-r-- 1 aqualab aqualab    39 Oct  7 19:44 test.4			      <
+-rw-rw-r-- 1 aqualab aqualab    47 Oct  7 19:44 test.5			      <
+-rw-r--r-- 1 aqualab aqualab    12 Oct  7 19:48 file2.test.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    32 Oct  7 19:44 test1.txt		      <
+-rw-rw-r-- 1 aqualab aqualab    43 Oct  7 19:44 test.20			      <
+-rw-rw-r-- 1 aqualab aqualab    25 Oct  7 19:44 test.200		      <
+-rw-rw-r-- 1 aqualab aqualab    24 Oct  7 19:44 test.23			      <
+-rw-rw-r-- 1 aqualab aqualab    23 Oct  7 19:44 test.3			      <
+      6      54     345							      <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test36: PASS
+test37: FAILED
+Input:
+alias showdir='echo ls'
+showdir
+unalias showdir
+showdir
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+ls										ls
+/bin/bash: line 6: showdir: command not found				      |	showdir: command not found
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test38: FAILED
+Input:
+alias showdir='ls'
+alias foo='ls -lh'
+alias test='whoami'
+alias
+unalias showdir
+unalias foo
+unalias test
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+									      >	alias test='whoami'
+alias foo='ls -lh'								alias foo='ls -lh'
+alias showdir='ls'								alias showdir='ls'
+alias test='whoami'							      <
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+test39: FAILED
+Input:
+alias showdir='ls '
+alias home='~/'
+showdir home
+unalias showdir
+unalias home
+exit
+-- HOW IT SHOULD BE ------------------------------------------------------------ YOUR PROGRAM --------------------------------------------------------------
+a.out									      |	catdogexit.txt
+Desktop									      |	cat.txtt
+Documents								      |	dogcatexit.exit
+Downloads								      |	dogexit.txt
+examples.desktop							      |	dummy
+Music									      |	file1.test.txt
+OS									      |	file2.test.txt
+Pictures								      |	interpreter.o
+Public									      |	io.o
+sublime-text_build-3083_i386.deb					      |	longlist.txt
+Templates								      |	myspin
+test.c									      |	runtime.o
+Videos									      |	sdriver.pl
+									      >	test1.txt
+									      >	test.20
+									      >	test.200
+									      >	test.23
+									      >	test.3
+									      >	test.4
+									      >	test.5
+									      >	text2.txt
+									      >	tsh
+									      >	tsh.o
+									      >	tsh-orig.32
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+1 extra credit test cases passed
+
+CHECK FOR MEMORY LEAKS
+0 possible leaks
+0 leaks
+0 still reachable

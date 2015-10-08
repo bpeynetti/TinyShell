@@ -78,7 +78,7 @@ aliasNode *aliasHead = NULL;
 // the next job id 
 int nextJobId = 1;
 // foreground process
-int fgpid = 0;
+int fgpid = -1;
 
 /************Function Prototypes******************************************/
 /* run command */
