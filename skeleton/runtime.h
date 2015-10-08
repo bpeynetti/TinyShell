@@ -209,7 +209,7 @@ EXTERN void ReleaseJob(jobNode* job);
 EXTERN void AddJob(pid_t pid, int state, char* cmdline);
 EXTERN void PrintJobs();
 EXTERN bool IsAlias(char* aliasName);
-EXTERN void RunAlias(command* cmd);
+EXTERN void RunAlias(commandT* cmd);
 
 
 #endif /* __RUNTIME_H__ */

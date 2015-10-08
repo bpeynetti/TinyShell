@@ -564,13 +564,13 @@ bool IsAlias(char* aliasName){
 void RunAlias(commandT* cmd){
   
   int i=1;
-  //char* commandLine;
+  char* commandLine = " ";
   aliasNode* current = aliasHead;
   
   
   while (current != NULL){
   	if (strcmp(cmd->argv[0],current->name)==0){
-  		char* commandLine = current->cmdLine;
+  		commandLine = current->cmdLine;
   	}
   	current = current->next;
   }
