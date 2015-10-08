@@ -517,6 +517,10 @@ static void RunBuiltInCmd(commandT* cmd)
   {
     //remove alias from list of aliases
     char* aliasName = cmd->argv[1];
+    if (aliasName==NULL){
+	printf("Specify command\n");
+	return;
+    }
     aliasNode* current = aliasHead;
     aliasNode* previous = NULL;
     while (current != NULL)
