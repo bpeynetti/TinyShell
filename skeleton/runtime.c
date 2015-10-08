@@ -463,6 +463,14 @@ static void RunBuiltInCmd(commandT* cmd)
       char quotes = 39;
       // int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
     
+      //char* firstIndx;
+      char* secondIndx;
+      
+      secondIndx = strtok(cmd->cmdline,"'");
+      secondIndx = strtok(NULL,"'");
+      
+      printf("Command is %s",secondIndx);
+
       while (cmd->argv[1][i]!=quotes){
         //printf("%c %c \n", cmd->argv[1][i], quotes);
         if (cmd->argv[1][i]==0){
@@ -472,6 +480,7 @@ static void RunBuiltInCmd(commandT* cmd)
         i++;
       }
       firstQuoteIndex = i;
+/*
       i++;
       
       while (cmd->argv[1][i]!=quotes){
@@ -483,12 +492,13 @@ static void RunBuiltInCmd(commandT* cmd)
         i++;
       }
       secondQuoteIndex = i;
-    
-      char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
+*/
+
+      //char* commandLine = malloc(sizeof(char) * (secondQuoteIndex - firstQuoteIndex));
       char* commandName = malloc(sizeof(char) * (firstQuoteIndex-1));
     
-    strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
-      strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex+1);
+    	strncpy(commandName, cmd->argv[1], firstQuoteIndex-1);
+      //strncpy(commandLine, cmd->argv[1]+(sizeof(char)*firstQuoteIndex), secondQuoteIndex-firstQuoteIndex+1);
     
       //come up with command as variable with the command name
       //come up with commandLine as variable with the command line entry
@@ -496,7 +506,7 @@ static void RunBuiltInCmd(commandT* cmd)
       aliasHead = malloc(sizeof(aliasNode));
       aliasHead->next = current;
       aliasHead->name = commandName;
-      aliasHead->cmdLine = commandLine;
+      aliasHead->cmdLine = secondIndx;
     }
     
   }
