@@ -78,7 +78,7 @@ aliasNode *aliasHead = NULL;
 // the next job id 
 int nextJobId = 1;
 // foreground process
-int fgpid = 0;
+int fgpid = -1;
 
 /************Function Prototypes******************************************/
 /* run command */
@@ -110,7 +110,7 @@ void RunCmd(commandT** cmd, int n)
   //printf("Command argument count: %d \n",cmd[0]->argc-1);
   if (IsAlias((cmd[0]->argv[0])))
   {
-    RunAlias((cmd[0]->argv[0]));
+    RunAlias((cmd[0]));
   }
   else
   {
@@ -561,16 +561,30 @@ bool IsAlias(char* aliasName){
   return FALSE;
 }
 
-void RunAlias(char* aliasName){
+void RunAlias(commandT* cmd){
   
-  aliasNode* current = aliasHead;
-  while (current != NULL)
+  int i=0;
+  char* commandLine;
+  
+  while (cmd->argv[i] != NULL)
   {
-    if (strcmp(aliasName,current->name)==0){
-      Interpret(current->cmdLine);
+  	
+  	aliasNode* current = aliasHead;
+  	
+    while (current != NULL)
+    {
+      if (strcmp(cmd->argv[i],current->name)==0){
+    		//append to command line to execute
+    		strcat(commandLine, current->cmdLine);
+        
+      }
+      current = current->next;
     }
-    current = current->next;
+    i++;
   }
+  
+  Interpret(commandLine);
+  
   //it gets here when the interpreter has finished executing
 
 }

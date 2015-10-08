@@ -107,6 +107,7 @@ static void sig_handler(int signo)
   {
     
     case SIGTSTP:
+    
       StopProcessHandler();
       break;
     case SIGINT:
