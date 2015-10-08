@@ -459,7 +459,7 @@ static void RunBuiltInCmd(commandT* cmd)
       //PARSING FOR QUOTATIONS
       int i=0;
       int firstQuoteIndex = 0;
-      int secondQuoteIndex = 0;
+      //int secondQuoteIndex = 0;
       char quotes = 39;
       // int sizeArgv1 = sizeof(cmd->argv[1])*sizeof(char*);
     
@@ -469,7 +469,7 @@ static void RunBuiltInCmd(commandT* cmd)
       secondIndx = strtok(cmd->cmdline,"'");
       secondIndx = strtok(NULL,"'");
       
-      printf("Command is %s",secondIndx);
+      //printf("Command is %s",secondIndx);
 
       while (cmd->argv[1][i]!=quotes){
         //printf("%c %c \n", cmd->argv[1][i], quotes);
